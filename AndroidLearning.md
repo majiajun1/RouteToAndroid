@@ -1,6 +1,6 @@
 # 安卓学习笔记
 
-## Session One
+## Session 1
 
 > 安卓四大组件
 > 
@@ -98,3 +98,25 @@ vdiew  五种级别
 logcat看日志即可  
 
 过滤器 新版本更智能了 直接写条件就好了
+
+
+## Session 3
+
+**跳过kotlin**
+
+四大组件
+
+### Activity
+
+layout放布局页面文件
+
+在XML中引用一个id，就使用@id/id_name这种语法，而如果你需要在XML中定义一 个id，则要使用@+id/id_name这种语法  
+
+
+setContentView()方法来给当前的Activity 
+加载一个布局，而在 setContentView()方法中，我们一般会传入一个布局文件的id
+
+
+所有的Activity都要在AndroidManifest.xml 中进行注册才能生效
+
+配置主Activity 的方法就是在<activity>标签的内部加入<intent-filter> 标签，并在这个标签里添加<action android:name="android.intent.action.MAIN"/>和<category android:name="android.intent.category.LAUNCHER" />这两句声明即可。
