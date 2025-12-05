@@ -75,3 +75,26 @@ apply false：「不立即启用插件」—— 只告诉 gradle「这个插件�
 
 **子模块（app文件夹）的gradle文件**
 
+```groovy
+    buildTypes {
+        release {
+        minifyEnabled false
+        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+```
+**minifyEnabled**   指代码混淆，防止代码被反编译破解
+
+
+proguard-android.txt vs proguard-android-optimize.txt？
+
+proguard-android.txt：仅混淆，不做代码优化（更保守）；
+proguard-android-optimize.txt：混淆 + 代码优化（比如删除未使用的代码、简化逻辑），体积更小，是新版默认推荐。
+
+> log日志
+
+vdiew  五种级别
+
+logcat看日志即可  
+
+过滤器 新版本更智能了 直接写条件就好了
