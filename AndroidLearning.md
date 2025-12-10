@@ -270,5 +270,39 @@ Intent 大致可以分为两种:显式Intent 和隐式Intent
 
 Intent 一般可用于启动Activity、启动Service 以 及发送广播等场景
 
+```java
+
+//显式调用
+binding.button1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent= new Intent(MainActivity.this, SecondActivity.class);
+                startActivity(intent);
+            }
+        });
+
+//隐式调用
+通过在<activity>标签下配置<intent-filter>的内容，可以指定当前Activity 能够响应的 action和category
+
+        <intent-filter>
+                <action android:name="com.example.myapplication.ACTION_START" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+```
+
+小坑：Android 12+ 要求「有 intent-filter 的 Activity 必须显式设 exported="true"」，否则系统找不到可处理该 Intent 的 Activity。
+
+隐式 Intent 的自动匹配本质就是「用 Action、Category、Data 这三类核心条件层层过滤」，最终找到能处理这个 Intent 的组件。
 
 
+exported=false	系统会剔除该组件（隐式 Intent 匹配不到）	仅可被应用内部显式 Intent 唤起
+
+添加自定义category时必须要带默认的
+
+其他的用法：
+```java
+Intent intent=new Intent(Intent.ACTION_VIEW);
+intent.setData(Uri.parse("https://www.baidu.com"));
+startActivity(intent);
+//浏览网页
+```
