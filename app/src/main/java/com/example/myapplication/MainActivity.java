@@ -1,17 +1,19 @@
 package com.example.myapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.activity.ComponentActivity;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.util.Log;
-import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
+import android.view.View;
 import android.widget.Toast;
 
 import com.example.myapplication.databinding.ActivityMainBinding;
 
-public class MainActivity extends ComponentActivity { //MainActivity 是继承自AppCompatActivity的
+public class MainActivity extends AppCompatActivity  { //MainActivity 是继承自AppCompatActivity的
     private ActivityMainBinding binding;
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -29,9 +31,16 @@ public class MainActivity extends ComponentActivity { //MainActivity 是继承�
         binding = ActivityMainBinding.inflate(getLayoutInflater());
 
         setContentView(binding.getRoot());
-        binding.button1.setOnClickListener( v->
-             Toast.makeText(this,"You clicked Button 1", Toast.LENGTH_SHORT).show()
-         );
+//        binding.button1.setOnClickListener( v->
+//             Toast.makeText(this,"You clicked Button 1", Toast.LENGTH_SHORT).show()
+//         );
+        binding.button1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent= new Intent(MainActivity.this, SecondActivity.class);
+                startActivity(intent);
+            }
+        });
 
 
     }
@@ -54,6 +63,9 @@ public class MainActivity extends ComponentActivity { //MainActivity 是继承�
         }else if(itemId ==R.id.remove_item)
         {
             Toast.makeText(this,"You clicked Remove",Toast.LENGTH_SHORT).show();
+        }else if(itemId ==R.id.quit_item)
+        {
+            finish();
         }
 
         return true;

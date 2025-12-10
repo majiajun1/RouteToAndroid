@@ -209,6 +209,24 @@ makeText()方法需要传入3个参数。
         getMenuInflater().inflate(R.menu.main,menu); //因为继承了Activity ，所以直接复用父类方法。
         return true;
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+    
+        int itemId = item.getItemId();
+        if(itemId == R.id.add_item)
+        {
+            Toast.makeText(this,"You clicked Add",Toast.LENGTH_SHORT).show();
+        }else if(itemId ==R.id.remove_item)
+        {
+            Toast.makeText(this,"You clicked Remove",Toast.LENGTH_SHORT).show();
+        }
+    
+        return true;
+    
+    
+    }
 ```
 
 onCreateOptionsMenu 是 Activity 的生命周期方法之一，
@@ -229,3 +247,28 @@ onCreateOptionsMenu()	用户点击「菜单按钮 / 三点图标」时（按需�
 onOptionsItemSelected()	用户点击菜单项时（按需执行）
 
 最主要是懒加载，其次是生命周期要区别开
+
+
+> 关键对比：手动监听 vs 系统回调（为什么不用手动 setOnClickListener？）
+
+你可能会想：“按钮可以用 setOnClickListener，为什么菜单不用？”
+
+按钮是「你自己的 View」，需要手动绑定监听；
+
+菜单是「系统管理的 UI」，系统已经帮你做了所有监听工作，
+只需要通过回调方法接收结果即可 —— 这是 Android 对系统级 UI 的统一设计（比如 ActionBar、状态栏通知都是这个逻辑）。
+
+debug实测，调用activity的onPreparePanel方法 才会初始化menu。
+
+> 销毁app
+
+就是退出功能，调用finish（） 即可
+
+> 使用Intent在Activity之间跳转
+
+Intent 大致可以分为两种:显式Intent 和隐式Intent
+
+Intent 一般可用于启动Activity、启动Service 以 及发送广播等场景
+
+
+
