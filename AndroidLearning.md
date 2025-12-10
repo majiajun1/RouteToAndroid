@@ -119,4 +119,113 @@ setContentView()方法来给当前的Activity
 
 所有的Activity都要在AndroidManifest.xml 中进行注册才能生效
 
-配置主Activity 的方法就是在<activity>标签的内部加入<intent-filter> 标签，并在这个标签里添加<action android:name="android.intent.action.MAIN"/>和<category android:name="android.intent.category.LAUNCHER" />这两句声明即可。
+
+配置主Activity 的方法就是在<activity>标签的内部加入<intent-filter> 标签，
+并在这个标签里添加<action android:name="android.intent.action.MAIN"/>和<category android:name="android.intent.category.LAUNCHER" />这两句声明即可。
+
+> 总体流程
+
+androidmanifest -> 注册一个activity -> setcontentview加载一个布局文件
+
+> 使用toast
+
+什么是toast？
+Toast 是Android 系统提供的一种非常好的提醒方式，
+在程序中可以使用它将一些短小的信息通知给用户，
+这些信息会在一段时间后自动消失。
+
+```java
+//view类
+    public void setOnClickListener(@Nullable OnClickListener l) {
+        throw new RuntimeException("Stub!");
+    }
+    public interface OnClickListener { //内部接口
+        void onClick(View var1);
+    }
+
+   //用法lamdba表达式
+public void example()
+{
+        botton1.setOnClickListener(v->
+        Toast.makeText(this,"You clicked Button 1", Toast.LENGTH_SHORT).show()//
+        );
+}
+
+
+public static Toast makeText(Context context, @StringRes int resId, @Duration int duration)
+        throws Resources.NotFoundException {
+    return makeText(context, context.getResources().getText(resId), duration);
+}
+
+public static Toast makeText(Context context, CharSequence text, @Duration int duration) {
+    return makeText(context, null, text, duration);
+}
+
+/**
+ * Make a standard toast to display using the specified looper.
+ * If looper is null, Looper.myLooper() is used.
+ *
+ * @hide
+ */
+public static Toast makeText(@NonNull Context context, @Nullable Looper looper,
+                             @NonNull CharSequence text, @Duration int duration) {
+    Toast result = new Toast(context, looper);
+
+    if (Compatibility.isChangeEnabled(CHANGE_TEXT_TOASTS_IN_THE_SYSTEM)) {
+        result.mText = text;
+    } else {
+        result.mNextView = ToastPresenter.getTextToastView(context, text);
+    }
+
+    result.mDuration = duration;
+    return result;
+}
+```
+
+button类继承textview类 textview类继承view类
+
+通过调用setOnClickListener()方法为按钮注册一个监听 器，点击按钮时就会执行监听器中的onClick()方法
+
+Toast类的静态方法makeText() 
+
+makeText()方法需要传入3个参数。
+第一个 参数是Context，也就是Toast要求的上下文，
+由于Activity本身就是一个Context对象，（继承）
+因此这里直接传入this即可。
+第二个参数是Toast 显示的文本内容。
+第三个参数是Toast 显示的时长，有两个内置常量可以选择:Toast.LENGTH_SHORT和Toast.LENGTH_LONG。
+
+
+题外话：使用viewbinding可以替代繁琐的多刺findviewbyid。
+
+> 使用Menu
+
+一种菜单功能
+
+```java
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.main,menu); //因为继承了Activity ，所以直接复用父类方法。
+        return true;
+    }
+```
+
+onCreateOptionsMenu 是 Activity 的生命周期方法之一，
+当用户点击「菜单按钮（三点图标 / 物理菜单键）」时，
+系统会回调这个方法，让你「加载并显示自定义的菜单布局」。
+
+Menu 是 Android 系统提供的「菜单容器类」，
+属于 android.view 包，核心是「管理菜单的所有选项（菜单项）」，
+你可以把它理解成「菜单的 “容器 / 清单”」。
+
+
+> 为什么不都写在onCreate方法？
+
+onCreate() 在 Activity 启动时只执行一次
+
+onCreateOptionsMenu()	用户点击「菜单按钮 / 三点图标」时（按需执行）
+
+onOptionsItemSelected()	用户点击菜单项时（按需执行）
+
+最主要是懒加载，其次是生命周期要区别开
