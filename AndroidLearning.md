@@ -497,7 +497,7 @@ Android 系统默认会将按钮上的英文字母全部转换成大写
 调用button 的setOnClickListener()方法时利用了Java单抽象方法接口的特性，从而 可以使用函数式API的写法来监听按钮的点击事件
 ```java
   //两种方式
-public void fun() {
+public void function() {
     //函数式接口
     button1.setOnClickListener(v ->
             Toast.makeText(this, "You clicked Button 1", Toast.LENGTH_SHORT).show()
@@ -528,3 +528,74 @@ android:maxLines属性来限定行数
 > ImageView
 
 展示图片用的
+
+android:src 放引用的照片
+
+binding.imageview.setImageResource(R.drawable.ic_launcher_background); 在定义好的图片控件换图片
+
+> ProgressBar 进度条
+
+进度条控件
+
+Android 控件的可见属性。所有的Android 控件都具有这个属性，可以通过 android:visibility进行指定，
+
+可选值有3 种:visible、invisible和gone。
+
+visible 表示控件是可见的，这个值是默认值，不指定android:visibility时，控件都是可见的。 
+
+invisible表示控件不可见，但是它仍然占据着原来的位置和大小，可以理解成控件变成透明 状态了。
+
+gone则表示控件不仅不可见，而且不再占用任何屏幕空间。我们可以通过代码来设置
+控件的可见性，使用的是setVisibility()方法，允许传入View.VISIBLE、 View.INVISIBLE和View.GONE这3 种值。
+
+```java
+    public void fun() {
+        binding2.testProgressBar.setOnClickListener(
+                v ->
+                {
+                    int visibility = binding2.progressBar.getVisibility();
+                    if (visibility == View.VISIBLE) {
+                        binding2.progressBar.setVisibility(View.GONE);
+                    } else {
+                        binding2.progressBar.setVisibility(View.VISIBLE);
+                    }
+                }
+        );
+    }
+```
+
+指定成水平进度条后，我们还可以通过android:max属性给进度条设置一个最大值
+
+控制水平进度条的参数是progress
+
+> AlertDialog
+
+AlertDialog 可以在当前界面弹出一个对话框，这个对话框是置顶于所有界面元素之上的，能够 屏蔽其他控件的交互能力，因此AlertDialog 一般用于提示一些非常重要的内容或者警告信息。
+
+
+```java
+public void example() {
+    new AlertDialog.Builder(this)
+            .setTitle("This is Dialog") // 设置标题
+            .setMessage("Something important.") // 设置提示内容
+            .setCancelable(false) // 设置对话框不可取消（点击外部/返回键都关不掉）
+// 设置确定按钮（OK）
+            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // 点击OK后的逻辑（可自行补充）
+                    dialog.dismiss(); // 手动关闭对话框（可选，点击按钮默认会关闭）
+                }
+            })
+            // 设置取消按钮（Cancel）
+            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // 点击Cancel后的逻辑（可自行补充）
+                    dialog.dismiss(); // 手动关闭对话框
+                }
+            })
+            .show(); // 显示对话框
+}
+
+```

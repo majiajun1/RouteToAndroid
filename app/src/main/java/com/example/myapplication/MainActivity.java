@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity  { //MainActivity 是继承�
                 Toast.makeText(MainActivity.this,text,Toast.LENGTH_SHORT).show();
             }else{
                 Toast.makeText(MainActivity.this,"Input empty",Toast.LENGTH_SHORT).show();
+                binding.imageview.setImageResource(R.drawable.ic_launcher_background);
             }
 
         });
