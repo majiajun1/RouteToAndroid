@@ -468,4 +468,63 @@ public class SecondActivity extends AppCompatActivity {
 ### Session 4
 UI开发
 
-我、
+#### 常用控件
+> TextView
+
+match_parent表示让当前 控件的大小和父布局的大小一样，
+也就是由父布局来决定当前控件的大小。
+wrap_content表示让当前控件的大小能够刚好包含住里面的内容，
+也就是由控件内容决定当前控件的大小。
+
+
+使用android:gravity来指定文字的对齐方式，
+可选值有top、bottom、start、 end、center等，
+可以用“|” 来同时指定多个值，这里我们指定的是"center"，
+效果等同 于"center_vertical|center_horizontal"，
+表示文字在垂直和水平方向都居中对齐。
+
+
+通过android:textColor属性可以指定文字的颜色，
+通过android:textSize属性可以指定 文字的大小。文字大小要使用sp 作为单位
+
+> Button
+
+Android 系统默认会将按钮上的英文字母全部转换成大写
+
+如果这不是你想要的效果，可以在XML中添加 android:textAllCaps="false"这个属性，这样系统就会保留你指定的原始文字内容了。
+
+
+调用button 的setOnClickListener()方法时利用了Java单抽象方法接口的特性，从而 可以使用函数式API的写法来监听按钮的点击事件
+```java
+  //两种方式
+public void fun() {
+    //函数式接口
+    button1.setOnClickListener(v ->
+            Toast.makeText(this, "You clicked Button 1", Toast.LENGTH_SHORT).show()
+    );
+
+
+    //实现函数
+       button1.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(MainActivity.this, SecondActivity.class);
+            Intent intent = new Intent("com.example.myapplication.ACTION_START");
+            intent.addCategory("com.example.myapplication.MY_CATEGORY");
+            startActivity(intent);
+        }
+    });
+}
+```
+
+> EditText
+
+文本框
+
+android:hint属性指定了一段提示性的文本
+
+android:maxLines属性来限定行数
+
+> ImageView
+
+展示图片用的
