@@ -108,6 +108,7 @@ logcat看日志即可
 
 ### Activity
 
+#### 一些用法
 layout放布局页面文件
 
 在XML中引用一个id，就使用@id/id_name这种语法，而如果你需要在XML中定义一 个id，则要使用@+id/id_name这种语法  
@@ -306,3 +307,165 @@ intent.setData(Uri.parse("https://www.baidu.com"));
 startActivity(intent);
 //浏览网页
 ```
+
+
+与此对应，我们还可以在<intent-filter>标签中再配置一个<data>标签，
+用于更精确地指 定当前Activity 能够响应的数据。<data>标签中主要可以配置以下内容。
+- android:scheme。用于指定数据的协议部分，如上例中的https 部分。 
+- android:host。用于指定数据的主机名部分，如上例中的www.baidu.com 部分。 
+- android:port。用于指定数据的端口部分，一般紧随在主机名之后。 
+- android:path。用于指定主机名和端口之后的部分，如一段网址中跟在域名之后的内 容。 
+- android:mimeType。用于指定可以处理的数据类型，允许使用通配符的方式进行指定。
+
+只有当<data>标签中指定的内容和Intent 中携带的Data 完全一致 时，当前Activity 才能够响应 该Intent 
+
+除了https 协议外，我们还可以指定很多其他协议，比如geo 表示显示地理位置、tel 表示拨打电话
+
+> 向下一个 Activity 传递数据（启动时传，最常用）
+
+核心：通过 Intent 携带数据，下一个 Activity 从 Intent 中获取。
+
+intent.putExtra("key", 数据);
+
+数据类型 变量 = intent.getXXXExtra("key", 默认值); 
+
+> 向上一个传递数据
+
+核心：startActivityForResult()/Activity Result API + setResult()，上一个 Activity 监听返回结果。
+
+#### 生命周期
+
+> 返回栈
+
+每启动一个 新的Activity ，就会覆盖在原Activity 之上，然后点击Back 键会销毁最上面的Activity ，下面的 一个Activity 就会重新显示出来。
+
+每当我 们按下Back 键或调用finish()方法去销毁一个Activity 时，处于栈顶的Activity 就会出栈，前一个入栈的Activity 就会重新处于栈顶的位置。系统总是会显示处于栈顶的Activity 给用户
+
+> 四个状态
+
+运行状态、暂停状态、停止状态、销毁状态
+
+暂停：不在栈顶，但仍然可见的，会进入暂停状态，例如对话框。内存极低时才考虑回收
+
+停止状态：不可见且不在栈顶的。系统仍然 会为这种Activity 保存相应的状态和成员变量，但是这并不是完全可靠的，当其他地方需要 内存时，处于停止状态的Activity 有可能会被系统回收。
+
+销毁状态：一个Activity从返回栈中移除后就变成了销毁状态。系统最倾向于回收处于这种状态的
+Activity ，以保证手机的内存充足。
+
+> 七个回调方法
+
+- onCreate()。这个方法你已经看到过很多次了，我们在每个Activity 中都重写了这个方 法，它会在Activity 第一次被创建的时候调用。你应该在这个方法中完成Activity 的初始化 操作，比如加载布局、绑定事件等。
+- onStart()。这个方法在Activity 由不可见变为可见的时候调用。 
+- onResume()。这个方法在Activity 准备好和用户进行交互的时候调用。此时的Activity 一 定位于返回栈的栈顶，并且处于运行状态。
+- onPause()。这个方法在系统准备去启动或者恢复另一个Activity 的时候调用。我们通常 会在这个方法中将一些消耗CPU的资源释放掉，以及保存一些关键数据，但这个方法的执 行速度一定要快，不然会影响到新的栈顶Activity 的使用。 
+- onStop()。这个方法在Activity 完全不可见的时候调用。它和onPause()方法的主要区 别在于，如果启动的新Activity 是一个对话框式的Activity ，那么onPause()方法会得到执 行，而onStop()方法并不会执行。
+- onDestroy()。这个方法在Activity 被销毁之前调用，之后Activity 的状态将变为销毁状 态。
+- onRestart()。这个方法在Activity 由停止状态变为运行状态之前调用，也就是Activity被重新启动了。
+
+> 三种生存期细分
+- 完整生存期。Activity 在onCreate()方法和onDestroy()方法之间所经历的就是完整生 存期。一般情况下，一个Activity 会在onCreate()方法中完成各种初始化操作，而在 onDestroy()方法中完成释放内存的操作。
+- 可见生存期。Activity 在onStart()方法和onStop()方法之间所经历的就是可见生存 期。在可见生存期内，Activity 对于用户总是可见的，即便有可能无法和用户进行交互。我 们可以通过这两个方法合理地管理那些对用户可见的资源。比如在onStart()方法中对资 源进行加载，而在onStop()方法中对资源进行释放，从而保证处于停止状态的Activity 不 会占用过多内存。
+- 前台生存期。Activity 在onResume()方法和onPause()方法之间所经历的就是前台生存 期。在前台生存期内，Activity 总是处于运行状态，此时的Activity 是可以和用户进行交互 的，我们平时看到和接触最多的就是这个状态下的Activity 。
+
+![pic1](PngForMarkdown/img_3.png)
+
+
+#### Activity的启动模式
+
+四种：standard、singleTop、singleTask 和 singleInstance
+
+> standard模式
+
+默认模式
+
+在standard 模式下，每当启动一个新的Activity ，
+它就会在返回栈中入栈，并处于栈顶的位置。对于使用standard模式的Activity ，
+系统不会在乎这个Activity 是否已经在返回栈中存在，每次启动都会创建一个该 Activity 的新实例。
+
+也就是说 你是可以在同一个activity上不断新建相同的activity的
+
+> singleTop模式
+
+简单说 就是如果该Activity 已经在栈顶就不会再新建了，但是不在栈顶的话，如现在在用另外一个Activity，则启动时会新建新的
+
+
+> singleTask模式
+
+
+
+每次启动该Activity时， 系统首先会在返回栈中检查是否存在该Activity 的实例，
+如果发现已经存在则直接使用该实例， 并把在这个Activity 之上的所有其他Activity 统统出栈，
+如果没有发现就会创建一个新的 Activity 实例。
+
+仅销毁「同一任务栈中」目标 Activity 之上的 Activity，跨任务栈的 Activity 不受影响。
+**有风险**
+
+> singleInstance模式
+
+定为singleInstance 模式的Activity 会启用一个新 的返回栈来管理这个Activity (其实如果singleT ask 模式指定了不同的taskAffinity ，也会启动 一个新的返回栈)
+
+- 独占任务栈：
+启动 singleInstance 的 Activity 时，系统会为它创建一个「新的、独立的任务栈」（栈里只有它自己），和应用默认的任务栈完全分离；
+- 全局唯一实例：
+整个系统中，该 Activity 只有一个实例 —— 无论从哪个应用 / 哪个任务栈启动它，都会复用这个唯一实例，且自动切换到它的独立栈；
+- 返回逻辑特殊：
+从 singleInstance Activity 按返回键：会先回到 “启动它的那个任务栈的栈顶页面”，而非销毁自己；
+例：应用默认栈（A→B）→ 启动 singleInstance 的 C → 按返回键 → 回到 B，而非销毁 C；
+- 其他 Activity 无法进入它的栈：
+哪怕用 Intent 跳转到 C 之后再启动 D，D 也会被放入「启动 C 的原任务栈」（而非 C 的独立栈）。
+
+
+想实现其他程序和我们的程序可以共享这个Activity 的实 例，应该如何实现呢?
+使用前面3 种启动模式肯定是做不到的，因为每个应用程序都会有自己的返回栈，同一个Activity 在不同的返回栈中入栈时必然创建了新的实例。而使用
+singleInstance 模式就可以解决这个问题， 
+在这种模式下，会有一个单独的返回栈来管理这个 Activity ，不管是哪个应用程序来访问这个Activity ，都共用同一个返回栈，也就解决了共享 Activity 实例的问题。
+
+
+![pic2.png](/PngForMarkdown/img.png)
+ 
+
+#### 一些实践
+
+返回键仅仅是退出
+可以写一个类，通过全局列表保存所有的Activity，然后搞一个按钮来销毁全部。
+
+快速获取传输参数
+```java
+public class SecondActivity extends AppCompatActivity {
+    // 1. 定义参数Key（可选，但建议统一维护，避免硬编码）
+    private static final String EXTRA_PARAM1 = "param1";
+    private static final String EXTRA_PARAM2 = "param2";
+
+    // 2. 封装静态启动方法（核心）
+    public static void actionStart(Context context, String data1, String data2) {
+        // 构建Intent并传递参数
+        Intent intent = new Intent(context, SecondActivity.class);
+        intent.putExtra(EXTRA_PARAM1, data1);
+        intent.putExtra(EXTRA_PARAM2, data2);
+        // 启动Activity（若context非Activity，需加FLAG_ACTIVITY_NEW_TASK，避免崩溃）
+        if (!(context instanceof Activity)) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+        context.startActivity(intent);
+    }
+
+    // 3. （可选）封装参数读取方法，进一步简化内部取值逻辑
+    private String getParam1() {
+        return getIntent().getStringExtra(EXTRA_PARAM1);
+    }
+
+    private String getParam2() {
+        return getIntent().getStringExtra(EXTRA_PARAM2);
+    }
+
+    // ... 其他生命周期/业务逻辑
+}
+```
+
+就是接口化了  没啥特别
+
+
+### Session 4
+UI开发
+
+我、

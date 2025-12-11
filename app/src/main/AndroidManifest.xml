@@ -11,13 +11,25 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
+        <activity android:name=".ThirdActivity"
+            android:exported="true"> <!-- Android 12+ 必须显式声明 -->
+            <intent-filter  >
+                <!-- 必须：响应“查看内容”的 Action -->
+                <action android:name="android.intent.action.VIEW" />
+                <!-- 必须：默认 Category（系统自动给 Intent 加） -->
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- 核心：限定仅响应 HTTPS 协议的 Uri -->
+                <data android:scheme="https" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".SecondActivity"
-            android:exported="true"
-            >
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.example.myapplication.ACTION_START" />
-                <category android:name="android.intent.category.DEFAULT"/>
+
+                <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="com.example.myapplication.MY_CATEGORY" />
             </intent-filter>
         </activity>

@@ -1,14 +1,20 @@
 package com.example.myapplication;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.activity.ComponentActivity;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.myapplication.databinding.ActivityMain2Binding;
+
+import java.util.List;
 
 public class SecondActivity extends AppCompatActivity {
 
@@ -28,6 +34,16 @@ public class SecondActivity extends AppCompatActivity {
                     intent.setData(Uri.parse("https://www.baidu.com"));
                     startActivity(intent);
                 }
+        );
+        binding2.button3.setOnClickListener( v -> {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    Uri uri = Uri.parse("tel:10086");
+                    intent.setData(uri);
+                    startActivity(intent);
+
+        }
+
+
         );
     }
 }
