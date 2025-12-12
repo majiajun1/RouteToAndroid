@@ -39,11 +39,9 @@ public class SecondActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
         );
-        binding2.button3.setOnClickListener( v -> {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    Uri uri = Uri.parse("tel:10086");
-                    intent.setData(uri);
-                    startActivity(intent);
+        binding2.ButtonToThird.setOnClickListener( v -> {
+            Intent intent=new Intent(SecondActivity.this,ThirdActivity.class);
+            startActivity(intent);
 
         });
 
@@ -61,6 +59,13 @@ public class SecondActivity extends AppCompatActivity {
                                 public void onClick(DialogInterface dialog, int which) {
                                     // 点击OK后的逻辑（可自行补充）
                                     dialog.dismiss(); // 手动关闭对话框（可选，点击按钮默认会关闭）
+                                    int visibility = binding2.progressBar.getVisibility();
+                                    if (visibility == View.VISIBLE) {
+                                        binding2.progressBar.setVisibility(View.GONE);
+                                    } else {
+                                        binding2.progressBar.setVisibility(View.VISIBLE);
+                                    }
+
                                 }
                             })
                             // 设置取消按钮（Cancel）
@@ -74,12 +79,6 @@ public class SecondActivity extends AppCompatActivity {
                             .show(); // 显示对话框
 
 
-                        int visibility = binding2.progressBar.getVisibility();
-                        if (visibility == View.VISIBLE) {
-                            binding2.progressBar.setVisibility(View.GONE);
-                        } else {
-                            binding2.progressBar.setVisibility(View.VISIBLE);
-                        }
 
                 }
         );

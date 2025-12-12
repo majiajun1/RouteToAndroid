@@ -1,4 +1,4 @@
-# 安卓学习笔记
+~~# 安卓学习笔记
 
 ## Session 1
 
@@ -599,3 +599,73 @@ public void example() {
 }
 
 ```
+
+调用setPositiveButton()方法为对话框设置确定按钮的点击事件，
+调用 setNegativeButton()方法设置取消按钮的点击事件
+
+
+
+#### 三种基本布局
+
+布局是一种可用于放置很多控件的容器，它可以按照一定的规律调整内部控件的位置，从而编写出精美的界面
+
+> LinearLayout 线性布局
+
+这个布局会将它所包含的控件在线性方向上依次排列
+
+通过**android:orientation**属性指定了排列方向是vertical ，如果指定的 是horizontal ，控件就会在水平方向上排列了
+
+内部的控件就绝对不能将宽度指定 为match_parent，否则，单独一个控件就会将整个水平方向占满，其他的控件就没有可放置 的位置了。同样的道理，如果LinearLayout 的排列方向是vertical，内部的控件就不能将高 度指定为match_parent。
+
+原因：
+
+**match_parent** 的含义是控件的尺寸（宽 / 高）完全等于父容器的可用尺寸
+
+**wrap_parent** 是 根据内容自适应
+
+如果垂直排列且height是match-parent 那就会占满页面
+
+**android:gravity** 用于指定文字在控件中的对齐方式，
+而android:layout_gravity用于指定控件在布局中的对齐方式 **（针对副轴）**
+
+
+当LinearLayout 的排列方向是horizontal时，只有垂直方向上的对齐方式才会生效。因为此时水平方向上的长度是不固定的，
+每添加一个控件，水平方向上的长度都会改变，因而无法指定该方向上的对齐方式。
+
+同样的道理，当LinearLayout 的排列方向是vertical时，只有水平方向上的对齐方式才会生效
+
+**android:layout_weight**：这个属性允许我们使用比例的方式来指定控件的大小，它在手机屏幕的适配性方面可以起到非常重要的作用
+
+使用了android:layout_weight属性，此时控件的宽度就不应该再由android:layout_width来决定了，这里指定成0dp是一种比较规范的写法
+
+> RelativeLayout相对布局
+
+可以通过相对定位的方式让控件出现在布局的任何位置。
+```xml
+    android:layout_alignParentRight="true"
+    android:layout_alignParentTop="true" 
+
+```
+可以让控件放左上角右上角 中间
+
+还可以相对于另外一个控件的指定位置放
+
+```xml
+    android:layout_above="@+id/button3"
+    android:layout_toLeftOf="@+id/button3"
+//相对于button3的左上角来放
+
+
+```
+android:layout_alignLeft 表示让一个控件的左边缘和另一个控件的左边缘对齐，
+android:layout_alignRight表示 让一个控件的右边缘和另一个控件的右边缘对齐。
+此外，还有android:layout_alignTop和 android:layout_alignBottom
+
+
+> FrameLayout帧布局
+
+由于定位方式的欠缺，FrameLayout 的应用场景相对偏少一些，不过在下一章中介 绍Fragment 的时候我们还是可以用到它的。
+
+
+#### 自定义控件
+
