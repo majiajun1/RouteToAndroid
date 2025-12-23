@@ -40,14 +40,14 @@ public class FirstFragment extends Fragment {
             public void onClick(View v) {
                 // Navigate to SecondFragment
                 Fragment secondFragment = new SecondFragment();
-                
+
                 // Pass data to SecondFragment
                 Bundle args = new Bundle();
                 args.putString("some_arg", "Hello from FirstFragment!");
                 secondFragment.setArguments(args);
 
                 FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                
+
                 // Check if we are in the SplitFragmentActivity (container_top exists)
                 // or FragmentTestActivity (fragment_container exists)
                 int containerId = R.id.fragment_container;
@@ -59,7 +59,7 @@ public class FirstFragment extends Fragment {
                         containerId = getId();
                     }
                 }
-                
+
                 transaction.replace(containerId, secondFragment);
                 transaction.addToBackStack(null); // Add to back stack so we can navigate back
                 transaction.commit();

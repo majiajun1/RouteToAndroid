@@ -28,19 +28,19 @@ public class SecondActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // ViewBinding 初始化（避免布局文件名写错）
-        binding2=ActivityMain2Binding.inflate(getLayoutInflater());
+        binding2 = ActivityMain2Binding.inflate(getLayoutInflater());
         setContentView(binding2.getRoot());
 //        binding2.button2.setOnClickListener(v ->Toast.makeText(this,"You clicked Button 2", Toast.LENGTH_SHORT).show());
         binding2.button2.setOnClickListener(
                 v ->
                 {
-                    Intent intent=new Intent(Intent.ACTION_VIEW);
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse("https://www.baidu.com"));
                     startActivity(intent);
                 }
         );
-        binding2.ButtonToThird.setOnClickListener( v -> {
-            Intent intent=new Intent(SecondActivity.this,ThirdActivity.class);
+        binding2.ButtonToThird.setOnClickListener(v -> {
+            Intent intent = new Intent(SecondActivity.this, ThirdActivity.class);
             startActivity(intent);
 
         });
@@ -79,18 +79,16 @@ public class SecondActivity extends AppCompatActivity {
                             .show(); // 显示对话框
 
 
-
                 }
         );
         binding2.testProgressHorizonBar.setOnClickListener(
                 v ->
                 {
 
-                    binding2.progressHorizonBar.setProgress(binding2.progressHorizonBar.getProgress()+5);
+                    binding2.progressHorizonBar.setProgress(binding2.progressHorizonBar.getProgress() + 5);
 
                 }
         );
-
 
 
     }

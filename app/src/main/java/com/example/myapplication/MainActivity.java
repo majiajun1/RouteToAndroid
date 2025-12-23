@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.activity.ComponentActivity;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -14,8 +15,9 @@ import android.widget.Toast;
 
 import com.example.myapplication.databinding.ActivityMainBinding;
 
-public class MainActivity extends AppCompatActivity  { //MainActivity 是继承自AppCompatActivity的
+public class MainActivity extends AppCompatActivity { //MainActivity 是继承自AppCompatActivity的
     private ActivityMainBinding binding;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,7 +41,7 @@ public class MainActivity extends AppCompatActivity  { //MainActivity 是继承�
             @Override
             public void onClick(View v) {
 //                Intent intent= new Intent(MainActivity.this, SecondActivity.class);
-                Intent intent=new Intent("com.example.myapplication.ACTION_START");
+                Intent intent = new Intent("com.example.myapplication.ACTION_START");
                 intent.addCategory("com.example.myapplication.MY_CATEGORY");
                 startActivity(intent);
             }
@@ -47,12 +49,11 @@ public class MainActivity extends AppCompatActivity  { //MainActivity 是继承�
 
         binding.printType.setOnClickListener(v ->
         {
-            String text= binding.editText.getText().toString();
-            if(text!=null&&text.length()!=0)
-            {
-                Toast.makeText(MainActivity.this,text,Toast.LENGTH_SHORT).show();
-            }else{
-                Toast.makeText(MainActivity.this,"Input empty",Toast.LENGTH_SHORT).show();
+            String text = binding.editText.getText().toString();
+            if (text != null && text.length() != 0) {
+                Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MainActivity.this, "Input empty", Toast.LENGTH_SHORT).show();
                 binding.imageview.setImageResource(R.drawable.ic_launcher_background);
             }
 
@@ -69,32 +70,23 @@ public class MainActivity extends AppCompatActivity  { //MainActivity 是继承�
         });
 
 
-
-
-
-
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        getMenuInflater().inflate(R.menu.main,menu); //因为继承了Activity ，所以直接复用父类方法。
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu); //因为继承了Activity ，所以直接复用父类方法。
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
+    public boolean onOptionsItemSelected(MenuItem item) {
 
         int itemId = item.getItemId();
-        if(itemId == R.id.add_item)
-        {
-            Toast.makeText(this,"You clicked Add",Toast.LENGTH_SHORT).show();
-        }else if(itemId ==R.id.remove_item)
-        {
-            Toast.makeText(this,"You clicked Remove",Toast.LENGTH_SHORT).show();
-        }else if(itemId ==R.id.quit_item)
-        {
+        if (itemId == R.id.add_item) {
+            Toast.makeText(this, "You clicked Add", Toast.LENGTH_SHORT).show();
+        } else if (itemId == R.id.remove_item) {
+            Toast.makeText(this, "You clicked Remove", Toast.LENGTH_SHORT).show();
+        } else if (itemId == R.id.quit_item) {
             finish();
         }
 

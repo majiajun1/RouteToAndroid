@@ -19,17 +19,18 @@ import com.example.myapplication.databinding.TitleBinding;
 public class ThirdActivity extends AppCompatActivity {
     private ActivityThirdBinding activityBinding;
     private TitleBinding titleBinding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         getSupportActionBar().hide();
-        activityBinding=ActivityThirdBinding.inflate(getLayoutInflater());
+        activityBinding = ActivityThirdBinding.inflate(getLayoutInflater());
         setContentView(activityBinding.getRoot());
-        titleBinding=activityBinding.topTitle;
+        titleBinding = activityBinding.topTitle;
         titleBinding.titleEdit.setOnClickListener(
-                v ->{
-                    Toast.makeText(this,"test button",LENGTH_SHORT).show();
+                v -> {
+                    Toast.makeText(this, "test button", LENGTH_SHORT).show();
                 }
         );
 
