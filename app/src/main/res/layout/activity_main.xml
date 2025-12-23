@@ -40,6 +40,20 @@
         android:text="Print the type text"
         android:id="@+id/printType"/>
 
+    <Button
+        android:id="@+id/btn_fragment_demo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Go to Fragment Demo"
+        android:backgroundTint="#009688"/>
+
+    <Button
+        android:id="@+id/btn_split_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Go to Split Fragment"
+        android:backgroundTint="#E91E63"/>
+
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

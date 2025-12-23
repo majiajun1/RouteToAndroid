@@ -662,13 +662,75 @@ android:layout_alignRight表示 让一个控件的右边缘和另一个控件的
 此外，还有android:layout_alignTop和 android:layout_alignBottom
 
 
+
+
 > FrameLayout帧布局
 
 由于定位方式的欠缺，FrameLayout 的应用场景相对偏少一些，不过在下一章中介 绍Fragment 的时候我们还是可以用到它的。
 
+
+> ConstraintLayout约束布局
+
+一些定位的方法：
+
+水平居中：Start_toStartOf="parent" + End_toEndOf="parent" + width=wrap_content；
+垂直居中：Top_toTopOf="parent" + Bottom_toBottomOf="parent" + height=wrap_content；
+
+
+1. 约束属性的命名规则（一眼看懂）
+   所有约束属性都遵循「app:layout_constraint[当前控件的边]_[绑定规则]_to[目标控件的边]」：
+ -  Start = 左（适配 RTL 布局，比 Left 更通用）
+  - End = 右（适配 RTL 布局，比 Right 更通用）
+  - Top = 上
+  - Bottom = 下
+  - Center = 中心（水平 / 垂直）
+ -  parent = 父布局（ConstraintLayout 本身）
+ -  目标控件 = 可以是 parent，也可以是其他控件的 id（比如 @id/pb_water）
+
+举个例子：
+  - app:layout_constraintStart_toStartOf="parent" → 「当前控件的左侧」绑定到「父布局的左侧」
+  - app:layout_constraintEnd_toEndOf="parent" → 「当前控件的右侧」绑定到「父布局的右侧」
+  - app:layout_constraintTop_toBottomOf="@id/pb_water" → 「当前控件的顶部」绑定到「进度条 pb_water 的底部」
 
 #### 自定义控件
 
 > 布局
 
 相当于弄了一个容器装控价，然后另外一个布局里面引用这个布局
+
+在喝水助手的自定义喝水进度圆环就实现了自定义的view，自行设计触发逻辑
+
+
+### Session 5  Fragment
+
+
+表示应用界面中可重复使用的一部分。fragment 定义和管理自己的布局。fragment 不能独立存在。它们必须由 activity 或其他 fragment 托管。fragment 的视图层次结构会成为宿主的视图层次结构的一部分，或附加到宿主的视图层次结构。
+
+常用于平板中，让平板获得更多页面的展示
+
+同一个 Fragment 可以在不同的 Activity 中使用，降低代码冗余。
+
+> 不同fragment之间可以传递消息吗？
+
+可以的，但不推荐 Fragment 之间直接通信（会导致耦合度太高），Android 官方推荐的最佳实践是通过它们所属的 Activity 作为中间媒介 来传递消息。
+
+
+> Transaction 的作用？
+
+Transaction 就是把一堆对 Fragment 的操作（增删改、动画、返回栈）打包在一起，一次性提交给系统执行的工具。
+
+```java
+           FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragment_container, secondFragment);
+            transaction.addToBackStack(null); // Add to back stack so we can navigate back
+            transaction.commit();
+```
+- 核心中的核心 : 这是 Fragment 切换的标准动作。
+  - beginTransaction() : 开启一个事务。意思是“我要开始做一系列操作了，请把它们当成一个整体”。
+  - replace(R.id.fragment_container, secondFragment) : “把容器里的旧 Fragment 拿走，换成新的 secondFragment ”。
+  - addToBackStack(null) : 这行极其重要！
+    - 如果不写：旧的 Fragment 会被直接销毁。你按手机返回键，会直接退出 Activity。
+    - 写了这行：旧的 Fragment 只是被压到了“栈”的下面。你按手机返回键，系统会把旧的 Fragment 重新拿出来显示。这就实现了“返回上一页”的效果。
+  - commit() : “操作定义完了，立即执行！”
+
+

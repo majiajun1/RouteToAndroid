@@ -58,6 +58,16 @@ public class MainActivity extends AppCompatActivity  { //MainActivity 是继承�
 
         });
 
+        binding.btnFragmentDemo.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, FragmentTestActivity.class);
+            startActivity(intent);
+        });
+
+        binding.btnSplitFragment.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SplitFragmentActivity.class);
+            startActivity(intent);
+        });
+
 
 
 
