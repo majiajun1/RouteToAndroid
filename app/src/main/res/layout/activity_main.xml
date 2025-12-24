@@ -54,6 +54,34 @@
         android:text="Go to Split Fragment"
         android:backgroundTint="#E91E63"/>
 
+    <Button
+        android:id="@+id/btn_send_broadcast"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Send Broadcast"
+        android:backgroundTint="#FF9800"/>
+
+    <Button
+        android:id="@+id/btn_send_ordered_broadcast"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Send Ordered Broadcast (Intercept)"
+        android:backgroundTint="#673AB7"/>
+
+    <Button
+        android:id="@+id/btn_file_persistence"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="File Persistence Demo"
+        android:backgroundTint="#009688"/>
+
+    <Button
+        android:id="@+id/btn_shared_preferences"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SharedPreferences Demo"
+        android:backgroundTint="#3F51B5"/>
+
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

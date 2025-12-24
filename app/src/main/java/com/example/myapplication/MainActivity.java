@@ -69,6 +69,36 @@ public class MainActivity extends AppCompatActivity { //MainActivity 是继承�
             startActivity(intent);
         });
 
+        binding.btnSendBroadcast.setOnClickListener(v -> {
+            // 发送广播
+            Intent intent = new Intent("com.example.myapplication.MY_BROADCAST");
+            // Android 8.0+ 静态注册的广播必须指定包名，或者使用动态注册。
+            // 为了简单演示，我们这里指定包名，这样静态注册的 Receiver 也能收到。
+            intent.setPackage(getPackageName());
+            sendBroadcast(intent);
+            Toast.makeText(this, "Broadcast Sent!", Toast.LENGTH_SHORT).show();
+        });
+
+        binding.btnSendOrderedBroadcast.setOnClickListener(v -> {
+            Intent intent = new Intent("com.example.myapplication.ORDERED_BROADCAST");
+            intent.setPackage(getPackageName());
+            // 发送有序广播
+            // 第一个参数：Intent
+            // 第二个参数：接收者需要的权限（这里填 null）
+            sendOrderedBroadcast(intent, null);
+            Toast.makeText(this, "Ordered Broadcast Sent!", Toast.LENGTH_SHORT).show();
+        });
+
+        binding.btnFilePersistence.setOnClickListener(v -> {
+            Intent intent = new Intent(this, FilePersistenceActivity.class);
+            startActivity(intent);
+        });
+
+        binding.btnSharedPreferences.setOnClickListener(v -> {
+            Intent intent = new Intent(this, SharedPreferencesActivity.class);
+            startActivity(intent);
+        });
+
 
     }
 
@@ -95,4 +125,5 @@ public class MainActivity extends AppCompatActivity { //MainActivity 是继承�
 
     }
 }
+
 

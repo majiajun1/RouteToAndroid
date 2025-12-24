@@ -734,3 +734,185 @@ Transaction 就是把一堆对 Fragment 的操作（增删改、动画、返回�
   - commit() : “操作定义完了，立即执行！”
 
 
+
+### Session 6 Brocast
+
+又分为标准广播和有序广播
+
+前者是一对多   后者是按链条一对一
+
+最大的优点是解藕得更彻底了
+
+> 用法
+
+建立自定义的receiver类 继承BroadcastReceiver
+然后定制onReceive方法。
+
+然后需要注册该频道
+
+```xml
+以静态注册为例
+<receiver
+    android:name=".MyReceiver"
+    android:enabled="true"
+    android:exported="false"> <!-- exported="false" 表示只接收本应用内的广播，安全关键！ -->
+    <intent-filter>
+        <action android:name="com.example.app.MY_CUSTOM_ACTION" />
+    </intent-filter>
+</receiver>
+
+```
+
+android：name可自定义。
+
+发送端再调用接口发送即可
+
+
+
+```java
+Intent intent = new Intent("com.example.app.MY_CUSTOM_ACTION"); 
+// Android 8.0+ 必须设置包名以显式发送给特定应用（如果是应用内广播）
+intent.setPackage(getPackageName()); 
+// 携带参数
+intent.putExtra("status_code", 200);
+
+
+
+```
+
+
+> 有序广播使用
+
+
+```xml
+
+        <!-- 注册有序广播接收者 -->
+        <!-- android:priority 决定优先级，数字越大优先级越高（最大1000） -->
+        <receiver android:name=".HighPriorityReceiver"
+            android:exported="true">
+            <intent-filter android:priority="100">
+                <action android:name="com.example.myapplication.ORDERED_BROADCAST"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".LowPriorityReceiver"
+            android:exported="true">
+            <intent-filter android:priority="0">
+                <action android:name="com.example.myapplication.ORDERED_BROADCAST"/>
+            </intent-filter>
+        </receiver>
+
+```
+
+主要用法是注册的时候加上priority属性
+
+高优先级的广播如果调用abortBroadcast()，则后面低优先级的广播接收着都不会接收到广播
+
+
+sendOrderedBroadcast()方法接收两个参数：第一个
+参数仍然是Intent；第二个参数是一个与权限相关的字符串，
+
+
+
+
+### Session 7    安卓存储
+
+#### 文件存储
+
+最原始的存储方式
+
+Android 的原始文件存储其实就是 Java 的文件 I/O，只不过 Android 帮你封装好了路径，让你不用去操心文件到底存在手机的哪个角落。
+
+> 特点
+
+这些文件默认都保存在： /data/data/<你的包名>/files/ 目录下。可以使用java的api来保存，只是没必要罢了
+
+> 主要接口 
+
+Context类中提供了一个openFileOutput()方法，可以用于将数据存储到指定的文件中。这
+个方法接收两个参数：
+
+- 第一个参数是文件名，在文件创建的时候使用，注意这里指定的文件名
+不可以包含路径，因为所有的文件都默认存储到/data/data/<pack age name>/files/ 目录
+下；
+- 第二个参数是文件的操作模式，主要有MODE_PRIVATE和MODE_APPEND两种模式可选，默
+认是MODE_PRIVATE，表示当指定相同文件名的时候，所写入的内容将会覆盖原文件中的内
+容，而MODE_APPEND则表示如果该文件已存在，就往文件里面追加内容，不存在就创建新文
+件。
+
+> 用法展示
+
+```java
+    private void save(String inputText) {
+        FileOutputStream out = null;
+        BufferedWriter writer = null;
+        try {
+            // MODE_PRIVATE: The default mode, where the created file can only be accessed by the calling application
+//            out = openFileOutput("data.txt", Context.MODE_PRIVATE);
+            out=openFileOutput("data.txt", Context.MODE_APPEND);
+            writer = new BufferedWriter(new OutputStreamWriter(out));
+            writer.write(inputText);
+            tvStatus.setText("Saved to: " + getFilesDir() + "/data.txt");
+            Toast.makeText(this, "Saved successfully", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (writer != null) {
+                    writer.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+```
+> 接口的问题
+
+```java
+    @Override
+    public FileOutputStream openFileOutput(String name, int mode)
+            throws FileNotFoundException {
+        return mBase.openFileOutput(name, mode);
+    }
+    
+
+```
+当前 mBase 的真实身份是： android.app.ContextImpl
+
+一个隐藏类  所以找不到
+```java
+
+    @Override
+    public FileOutputStream openFileOutput(String name, int mode) throws FileNotFoundException {
+        checkMode(mode);
+        final boolean append = (mode&MODE_APPEND) != 0;
+        File f = makeFilename(getFilesDir(), name);
+        try {
+            FileOutputStream fos = new FileOutputStream(f, append);
+            setFilePermissionsFromMode(f.getPath(), mode, 0);
+            return fos;
+        } catch (FileNotFoundException e) {
+        }
+
+        File parent = f.getParentFile();
+        parent.mkdir();
+        FileUtils.setPermissions(
+            parent.getPath(),
+            FileUtils.S_IRWXU|FileUtils.S_IRWXG|FileUtils.S_IXOTH,
+            -1, -1);
+        FileOutputStream fos = new FileOutputStream(f, append);
+        setFilePermissionsFromMode(f.getPath(), mode, 0);
+        return fos;
+    }
+```
+
+
+#### SharedPreferences
+
+在喝水助手里面用过了
+
+用于存储简单的键值对数据，比如用户的登录状态、应用的配置信息等。
+
+> 用法和接口
+
