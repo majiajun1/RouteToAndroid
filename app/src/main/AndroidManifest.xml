@@ -50,6 +50,12 @@
             android:label="File Persistence Demo"/>
         <activity android:name=".SharedPreferencesActivity"
             android:label="SharedPreferences Demo"/>
+        <activity android:name=".DatabaseActivity"
+            android:label="SQLite Database Demo"/>
+        <activity android:name=".DatabaseAdvancedActivity"
+            android:label="Advanced Query Demo"/>
+        <activity android:name=".DatabaseTransactionActivity"
+            android:label="SQLite Transaction Demo"/>
         
         <!-- 注册广播接收者 1 -->
         <receiver android:name=".MyBroadcastReceiver"

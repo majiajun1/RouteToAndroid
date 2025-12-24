@@ -99,6 +99,11 @@ public class MainActivity extends AppCompatActivity { //MainActivity 是继承�
             startActivity(intent);
         });
 
+        binding.btnSqliteDemo.setOnClickListener(v -> {
+            Intent intent = new Intent(this, DatabaseActivity.class);
+            startActivity(intent);
+        });
+
 
     }
 

@@ -465,7 +465,7 @@ public class SecondActivity extends AppCompatActivity {
 就是接口化了  没啥特别
 
 
-### Session 4
+## Session 4
 UI开发
 
 #### 常用控件
@@ -701,7 +701,7 @@ android:layout_alignRight表示 让一个控件的右边缘和另一个控件的
 在喝水助手的自定义喝水进度圆环就实现了自定义的view，自行设计触发逻辑
 
 
-### Session 5  Fragment
+## Session 5  Fragment
 
 
 表示应用界面中可重复使用的一部分。fragment 定义和管理自己的布局。fragment 不能独立存在。它们必须由 activity 或其他 fragment 托管。fragment 的视图层次结构会成为宿主的视图层次结构的一部分，或附加到宿主的视图层次结构。
@@ -815,7 +815,7 @@ sendOrderedBroadcast()方法接收两个参数：第一个
 
 
 
-### Session 7    安卓存储
+## Session 7    安卓存储
 
 #### 文件存储
 
@@ -916,3 +916,215 @@ Context类中提供了一个openFileOutput()方法，可以用于将数据存储
 
 > 用法和接口
 
+ ```java
+
+ // 1. 拿对象
+SharedPreferences sp = getSharedPreferences("UserConfig", Context.MODE_PRIVATE);
+
+// 2. 读
+String name = sp.getString("username", "Guest"); // 第一个参数是key，第二个参数是默认值
+
+// 3. 写 (三步走：edit -> put -> apply)
+sp.edit().putString("username", "Admin").putInt("level", 99).apply(); // 别忘了这最后一下！
+```
+
+
+
+
+
+> 为什么写入要用editor  但读取直接读preferences？
+
+就是读写分离
+sharedpreferences 的写入需要用到io，把数据放到文件里面。 多次写入会导致io性能问题
+为了性能优化，则使用editor来写入，而使用preferences来读取（直接从内存里面读）
+
+editor类写入为异步批量写入
+```java
+SharedPreferences.Editor editor = sp.edit(); // 1. 开启一个“草稿本”
+editor.putString("name", "Jack"); // 2. 在内存草稿里改
+editor.putInt("age", 18);         // 3. 在内存草稿里改
+editor.putBoolean("vip", true);   // 4. 在内存草稿里改
+editor.apply();                   // 5. 【一次性】把草稿本的内容合并，并写入磁盘
+
+````
+
+
+#### SQLite 数据库
+
+安卓内置的数据库
+
+> 一些用法和接口
+
+*助手类：SQLiteOpenHelper*
+这是你的数据库管家，必须继承它并重写两个方法。
+
+- onCreate(SQLiteDatabase db) :
+  - 时机 ：数据库第一次被创建时调用。
+  - 作用 ：在这里执行 create table 语句。
+- onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) :
+  - 时机 ：数据库版本号增加时调用。
+  - 作用 ：在这里执行 drop table 或 alter table 升级表结构。
+
+
+*核心对象*
+- SQLiteDatabase :
+  - 作用 ：数据库的操作入口（执行增删改查）。
+  - 获取 ： dbHelper.getWritableDatabase() (读写) 或 getReadableDatabase() (只读)。
+- Cursor :
+  - 作用 ：查询结果的游标（就像 Excel 的当前选中行）。
+  - 注意 ：用完必须调用 close() ，否则内存泄漏。
+
+
+可以直接执行语句
+```java
+db.execSQL("INSERT INTO Book (name, price) VALUES (?, ?)", new String[]{"Android开发", "99"});
+```
+
+
+> CRUD方法
+
+增：
+```java
+ContentValues values = new ContentValues();
+values.put("name", "Android开发");
+values.put("price", 99);
+db.insert("Book", null, values);
+//n第二个参数 null没啥用的
+相当于 INSERT INTO Book (name, price) VALUES ('Android开发', 99);
+```
+删:
+```java
+db.delete("Book", "name=?", new String[]{"Android开发"});
+ 相当于 DELETE FROM Book WHERE name='Android开发';
+
+SQL: DELETE FROM Book WHERE name LIKE '%Java%'
+db.delete("Book", "name LIKE ?", new String[]{"%Java%"});
+
+SQL: DELETE FROM Book WHERE id = 1
+db.delete("Book", "id = 1", null);
+
+SQL: DELETE FROM Book WHERE price > 50 AND pages < 100
+db.delete("Book", "price > ? AND pages < ?", new String[]{"50", "100"});
+```
+
+改：
+```java
+ContentValues values = new ContentValues();
+values.put("price", 88);
+db.update("Book", values, "name=?", new String[]{"Android开发"});
+```
+
+查：
+```java
+Cursor cursor = db.query("Book", null, null, null, null, null, null);
+while (cursor.moveToNext()) {
+    String name = cursor.getString(cursor.getColumnIndex("name"));
+    int price = cursor.getInt(cursor.getColumnIndex("price"));
+    Log.d("Book", "name: " + name + ", price: " + price);
+}
+cursor.close();
+```
+用游标是因为安卓资源受限，没办法直接像mybatis那样返回一整个列表
+```java
+cursor = db.query(
+    "Book",                           // 1. table
+    new String[] { "author", "AVG(price) as avg_price" }, // 2. columns: 查作者和平均价格
+    "pages > ?",                      // 3. selection: 只要页数 > 100 的书
+    new String[] { "100" },           // 4. selectionArgs
+    "author",                         // 5. groupBy: 按作者分组算平均值
+    "avg_price > 20",                 // 6. having: 只要均价 > 20 的组
+    "avg_price DESC"                  // 7. orderBy: 贵的排前面
+);   // 7. orderBy: 排序
+
+SELECT author, AVG(price) as avg_price 
+FROM Book 
+WHERE pages > 100 
+GROUP BY author 
+HAVING avg_price > 20 
+ORDER BY avg_price DESC
+
+```
+
+
+>  一些注意点
+
+sqlite的数据库存储路径都是默认的，可以改但没必要
+
+当你使用 SQLiteOpenHelper 或 Context.openOrCreateDatabase("BookStore.db", ...) 时，如果不指定绝对路径，数据库文件默认会生成在：
+
+/data/data/<你的包名>/databases/BookStore.db
+
+在你的这个项目里，具体的路径就是： /data/data/com.example.myapplication/databases/BookStore.db
+
+<br>
+
+getWritableDatabase() ：返回一个可读写的数据库对象。
+
+getReadableDatabase() ：返回一个只读的数据库对象。
+
+异同：
+ 
+  - 相同点：如果数据库不存在，会创建它；如果存在，会打开它。
+  - 不同点：如果数据库文件大小超过了系统限制，getReadableDatabase() 会返回一个只读数据库，而不会抛出异常。而 getWritableDatabase() 会直接抛出异常。
+
+
+> onUpgrade方法
+当用户更新了 App，代码里版本号变了，但用户手机里的数据库文件还是旧版本（version 1），这时候系统检测到差异，就会触发 onUpgrade 。
+
+```java
+@Override
+public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    // 假设是从版本 1 升到 2
+    if (oldVersion <= 1) {
+        // 给 Book 表加一列 'category_id'
+        db.execSQL("ALTER TABLE Book ADD COLUMN category_id INTEGER");
+    }
+    
+    // 假设是从版本 2 升到 3
+    if (oldVersion <= 2) {
+        // 又加了一列 'publish_date'
+        db.execSQL("ALTER TABLE Book ADD COLUMN publish_date TEXT");
+    }
+}
+```
+
+> 事务
+```java
+db.beginTransaction(); // 1. 开启事务
+try {
+    // ... 做一堆操作 (删除、插入、更新...)
+    db.delete(...);
+    db.insert(...);
+    
+    db.setTransactionSuccessful(); // 2. 标记成功 (如果没跑这一行就结束，就是回滚)
+} catch (Exception e) {
+    // 捕获异常，什么都不用做，或者打个日志
+} finally {
+    db.endTransaction(); // 3. 结束事务 (提交或回滚)
+}
+```
+
+和jdbc区别是 没有rollback和submit
+
+
+
+## Session 8  Contenct Provider
+
+先学service
+
+
+
+
+## Session 9  多媒体
+
+
+
+
+## Session 10 Service
+
+Service 是Android 中实现程序后台运行的解决方案，它非常适合执行那些不需要和用户交互而
+且还要求长期运行的任务。Service 的运行不依赖于任何用户界面，即使程序被切换到后台，或
+者用户打开了另外一个应用程序，Service 仍然能够保持正常运行。
+
+
+## Session 11 网络

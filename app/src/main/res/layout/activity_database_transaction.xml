@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SQLite Transaction Demo"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Scenario: Replace 'Old Book' with 'New Book'.\nThis requires two steps:\n1. Delete 'Old Book'\n2. Insert 'New Book'\n\nIf step 2 fails, step 1 must be undone!"
+        android:padding="10dp"
+        android:background="#FFF3E0"
+        android:textStyle="italic"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btn_reset_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Reset Data (Create 'Old Book')"
+        android:backgroundTint="#FF9800"/>
+
+    <Button
+        android:id="@+id/btn_transaction_success"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Execute Transaction (Success)"
+        android:backgroundTint="#4CAF50"/>
+
+    <Button
+        android:id="@+id/btn_transaction_fail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Execute Transaction (Fail Halfway)"
+        android:backgroundTint="#F44336"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Current Database State:"
+        android:textStyle="bold"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/tv_transaction_result"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="100dp"
+        android:background="#E0F7FA"
+        android:padding="10dp"
+        android:text="Waiting..."
+        android:textSize="16sp"/>
+
+</LinearLayout>
