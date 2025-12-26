@@ -104,7 +104,20 @@ public class MainActivity extends AppCompatActivity { //MainActivity 是继承�
             startActivity(intent);
         });
 
+        binding.btnThreadDemo.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ThreadActivity.class);
+            startActivity(intent);
+        });
 
+        binding.btnServiceDemo.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ServiceActivity.class);
+            startActivity(intent);
+        });
+
+        binding.btnBoundServiceDemo.setOnClickListener(v -> {
+            Intent intent = new Intent(this, BoundServiceActivity.class);
+            startActivity(intent);
+        });
     }
 
     @Override

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center_horizontal">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Started Service Demo"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp"/>
+
+    <Button
+        android:id="@+id/btn_start_service"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start Service"
+        android:backgroundTint="#4CAF50"/>
+
+    <Button
+        android:id="@+id/btn_stop_service"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Stop Service"
+        android:backgroundTint="#F44336"
+        android:layout_marginTop="16dp"/>
+
+    <Button
+        android:id="@+id/btn_start_foreground"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start Foreground Service"
+        android:backgroundTint="#2196F3"
+        android:layout_marginTop="32dp"/>
+
+    <Button
+        android:id="@+id/btn_stop_foreground"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Stop Foreground Service"
+        android:backgroundTint="#9C27B0"
+        android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Check Logcat (tag: MyStartedService) to see lifecycle logs."
+        android:layout_marginTop="32dp"
+        android:textColor="#757575"/>
+
+</LinearLayout>

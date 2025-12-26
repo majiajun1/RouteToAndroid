@@ -1126,5 +1126,504 @@ Service 是Android 中实现程序后台运行的解决方案，它非常适合�
 且还要求长期运行的任务。Service 的运行不依赖于任何用户界面，即使程序被切换到后台，或
 者用户打开了另外一个应用程序，Service 仍然能够保持正常运行。
 
+Service 并不会自动开启线程，所有的代码
+都是默认运行在主线程当中的。也就是说，我们需要在Service 的内部手动创建子线程，并在这
+里执行具体的任务，否则就有可能出现主线程被阻塞的情况。
 
-## Session 11 网络
+### 基本多线程
+> 用法
+
+可以直接用java的方法
+
+
+安卓多了个handler、asynctask  后续展开讲讲
+> 子线程不能直接改变UI？为什么？怎么办？
+
+ui更新只能在主线程去做，子线程去更新会报错
+
+因为 Android 的 UI 控件（TextView, Button 等） 不是线程安全的 。
+如果多个线程同时去改同一个 TextView 的字，界面可能就乱套了，甚至底层渲染会出错。
+为了性能，Android 没有给 UI 控件加锁，而是定了一条死规矩： 只有主线程（UI 线程）才能动 UI 。
+
+解决方法是用异步处理：handler 、  rxjava（最新）、AysncTask（已废弃）
+
+- runOnUiThread(Runnable action)是简单方法，会自动用一个内置的 Handler 帮你把代码 post 到主线程去执行。
+
+- View.post(Runnable action)，每个 View 内部都关联了一个 Handler。调用 post 就是把你的代码塞进这个 View 的消息队列里，等主线程有空了就来执行
+
+
+
+### 异步消息处理机制 和handler 相关
+Message 是 Handler 用来传递消息的类。每个 Handler 都有一个消息队列，当你调用 sendMessage() 时，消息就会被加入到队列里。主线程会从队列里取出消息，调用 handleMessage() 来处理。
+
+handler简单讲，简单讲的话，就是要设计一个handler，绑定要发送的目标线程，目标线程的handler收到消息后触发对应逻辑。 Message也会绑定对应的handler，如果不绑定，底层会强制执行 msg.target = this ，是为了确保“闭环”， 谁发的（Handler A），最后就必须由谁来收（Handler A.handleMessage）。
+
+MessageQueue 是消息队列的意思，它主要用于存放所有通过Handler 发送的消息。这部
+分消息会一直存在于消息队列中，等待被处理。每个线程中只会有一个MessageQueue对
+象。
+
+Looper 是每个线程中的MessageQueue的管家，调用Looper 的loop()方法后，就会进入
+一个无限循环当中，然后每当发现MessageQueue 中存在一条消息时，就会将它取出，并
+传递到Handler 的handleMessage()方法中。每个线程中只会有一个Looper对象。
+
+首先需要在主线程当中创建一个Handler对象，并重写
+handleMessage()方法。然后当子线程中需要进行UI操作时，就创建一个Message对象，并
+通过Handler 将这条消息发送出去。之后这条消息会被添加到MessageQueue 的队列中等待被
+处理，而Looper 则会一直尝试从MessageQueue 中取出待处理消息，最后分发回Handler 的
+handleMessage()方法中。由于Handler 的构造函数中我们传入了
+Looper.getMainLooper()，所以此时handleMessage()方法中的代码也会在主线程中运
+行，于是我们在这里就可以安心地进行UI操作了。
+
+### AsyncTask
+
+AsyncTask 在 Android 11 (API 30) 已被官方弃用
+
+
+它就是把 Thread + Handler 封装成了一个类，让你不用自己写 new Thread 和 sendMessage ，就能轻松实现“后台干活，前台更新 UI”。
+
+```java
+public abstract class AsyncTask<Params, Progress, Result>
+```
+三个泛型参数的意思：
+
+1. Params : 启动任务时输入的参数类型（比如：下载的 URL String ）。
+2. Progress : 后台任务执行进度的类型（比如：进度百分比 Integer ）。
+3. Result : 后台任务执行完返回的结果类型（比如：下载好的 Bitmap 或 File ）。
+如果不需要某个参数，可以填 Void
+
+
+java的范型定义方法，可以塞任何名称的范型  T1 T2 或者说Parms1  Params2  都可以 很自由的
+
+
+#### 四大方法
+
+> doInBackground(Params... params)
+
+核心方法
+ 它是唯一一个运行在 子线程 的方法，是整个任务的 核心逻辑 （下载文件、查数据库、解码图片）。
+
+ > onPreExecute()
+- 触发时机 ：任务刚启动，还没进子线程之前。
+- 为什么去实现？
+- 通常用来**“做准备”**。比如：把“开始下载”按钮禁用，把进度条显示出来
+
+> onProgressUpdate(Progress... values)
+
+- 触发时机 ：当在后台任务中调用了publishProgress(Progress...)方法后，
+onProgressUpdate (Progress...)方法就会很快被调用， 
+- 为什么去实现？
+- 用来**“报平安”**。子线程是哑巴，不能直接改 UI。这个方法是专门给你留的“UI 更新通道”。
+
+
+> onPostExecute(Result result)
+
+- 触发时机 ： doInBackground 跑完并 return 结果之后。
+- 为什么去实现？
+- 用来 **“交卷”**。后台算出结果了，得有个地方把结果展示给用户看（比如隐藏进度条，显示图片）。
+
+> 注意点
+
+- publishProgress 内部其实就是封装了一个 Message： handler.obtainMessage(MESSAGE_POST_PROGRESS, 50).sendToTarget(); 这个消息从子线程飞到了主线程。
+- 主线程里 ：
+Handler 收到消息，解析出 50 。
+然后自动调用你的 onProgressUpdate(50) 方法。
+在这个方法里，你终于可以放心地操作 progressBar.setProgress(50) 了。
+
+```java
+    @WorkerThread
+    protected final void publishProgress(Progress... values) {
+        if (!isCancelled()) {
+            getHandler().obtainMessage(MESSAGE_POST_PROGRESS,
+                    new AsyncTaskResult<Progress>(this, values)).sendToTarget();
+        }
+    }
+   
+   ```
+三个点是语法糖，可以让你在调用时，可以传入一个数组，也可以传入多个参数。
+
+- 为什么 doInBackground 在子线程？ 因为它被包在了 Executor.execute(...) 里面。是线程池在调用它。
+- 为什么 onPostExecute 在主线程？ 因为它是在 Handler.handleMessage(...) 里被调用的。而这个 Handler 是绑定主线程的。
+```java
+mWorker = new WorkerRunnable<Params, Result>() {
+            public Result call() throws Exception {
+                mTaskInvoked.set(true);
+                Result result = null;
+                try {
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+                    //noinspection unchecked
+                    result = doInBackground(mParams);
+                    Binder.flushPendingCommands();
+                } catch (Throwable tr) {
+                    mCancelled.set(true);
+                    throw tr;
+                } finally {
+                    postResult(result);
+                }
+                return result;
+            }
+        };
+```
+<br>
+
+> 为什么被淘汰了 缺点是什么
+
+1. AsyncTask 与 Activity/Fragment 生命周期强耦合，但自身无生命周期感知能力，是最核心的问题：
+ - 内存泄漏根源：AsyncTask 是抽象类，通常以匿名内部类的形式在 Activity 中实现，而匿名内部类会隐式持有外部 Activity 的强引用。若 Activity 销毁时（如用户旋转屏幕），AsyncTask 还在后台执行，会导致 Activity 实例无法被 GC 回收，引发内存泄漏；
+ - 崩溃风险：即使内存泄漏未发生，AsyncTask 执行完 onPostExecute()（主线程回调）时，若 Activity 已销毁，此时更新 UI（如 setText()）会直接抛出 NullPointerException（控件已销毁）或 IllegalStateException（Activity 已 finish）。
+
+2. AsyncTask 内部使用静态线程池 THREAD_POOL_EXECUTOR，存在以下问题：
+   
+ - （1）全局静态线程池 → 资源竞争
+   THREAD_POOL_EXECUTOR 是静态常量，所有 AsyncTask 实例共用这一个线程池：
+   若多个页面 / 组件同时提交大量 AsyncTask 任务，会争抢这 20 个线程资源，导致任务执行延迟；
+   线程池参数（核心线程数 1、最大 20）是硬编码的，开发者无法自定义，适配复杂场景（如大量 IO 任务）时灵活性极差。
+   
+ - （2）SynchronousQueue + 固定最大线程数 → 任务堆积风险
+   同步队列无缓存能力，任务提交时必须有线程立即处理，否则触发拒绝策略；
+   虽然拒绝策略会兜底到串行执行器，但串行执行器的队列是无界的（LinkedBlockingQueue），大量任务堆积会导致内存占用飙升，甚至 OOM。
+   
+ - （3）核心线程数 = 1 → 低并发效率低
+   核心线程数仅为 1，意味着即使系统资源充足，默认也只有 1 个线程长期运行，非核心线程需要频繁创建 / 销毁（存活时间仅 3 秒），增加了线程调度的开销。
+   
+ - （4）静态生命周期 → 无法随组件销毁
+   线程池是静态的，生命周期与整个应用进程绑定，即使 Activity/Fragment 销毁，线程池仍在运行，若 AsyncTask 持有外部引用，极易导致内存泄漏（这也是你之前问的 AsyncTask 被淘汰的核心原因之一）。
+
+
+```java
+@Deprecated
+    public static final Executor THREAD_POOL_EXECUTOR;
+    
+    private static final int CORE_POOL_SIZE = 1;
+    private static final int MAXIMUM_POOL_SIZE = 20;
+    private static final int BACKUP_POOL_SIZE = 5;
+    private static final int KEEP_ALIVE_SECONDS = 3;
+    
+    static {
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+                CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE_SECONDS, TimeUnit.SECONDS,
+                new SynchronousQueue<Runnable>(), sThreadFactory);
+        threadPoolExecutor.setRejectedExecutionHandler(sRunOnSerialPolicy);
+        THREAD_POOL_EXECUTOR = threadPoolExecutor;
+    }
+
+```
+3. 取消任务不可靠
+
+      AsyncTask 的 cancel() 方法仅标记任务为 “取消状态”，无法真正中断后台线程：
+-  需在 doInBackground 中手动检查 isCancelled()，否则任务会一直执行到结束；
+- 若后台执行的是阻塞操作（如网络请求、IO 读写），cancel() 几乎无效，易导致任务 “僵尸运行”。
+
+4. 缺乏异常处理机制
+
+doInBackground 中抛出的异常会被 AsyncTask 内部吞掉，开发者无法直接捕获，只能通过 try-catch 手动处理，调试和问题定位困难。
+
+### Service
+
+Service (服务) 是 Android 四大组件之一。
+
+一句话形容它： “没有界面的 Activity” 。
+
+它默默在后台干活，不需要和用户交互，甚至用户退出了 App 界面，Service 还可以继续跑（比如音乐播放器）。
+
+
+实现时要继承service类
+
+#### Started Service (启动式)
+
+
+
+
+启动式 Service 的核心定位：
+- 启动方（如 Activity）与 Service 是 “单向通信”，启动后两者无直接关联，即使启动组件销毁，Service 仍会在后台运行；
+- 多次调用 startService() 只会触发 Service 的 onStartCommand() 多次执行，但不会创建多个 Service 实例（单例特性）。
+
+> 生命周期
+
+onCreate() 只执行一次 → onStartCommand()（多次调用）→ onDestroy()（停止时）
+
+> 通信方式
+
+启动时可通过 Intent 传递数据，但默认无返回值（需通过广播 / 回调 / EventBus 等实现双向通信）
+
+
+```java
+ Intent intent = new Intent(this, MyStartedService.class);
+            // 1. 发送数据给 Service
+            intent.putExtra("task_name", "Download Movie");
+            startService(intent);
+
+```
+
+
+
+
+> 停止方式
+- Service 内部调用 stopSelf()；
+- 外部调用 Context.stopService(Intent)；
+- 系统资源不足时被回收
+
+用户下令 (App 进程) ：
+
+- 你在 Activity 里调用了 stopService(intent) 。
+- 这个请求实际上是通过 Binder（Android 的跨进程通信机制）发给了系统层面的大管家 AMS 。
+
+管家调度 (System 进程) ：
+
+- AMS 收到请求后，会去查这个 Service 的状态。
+- 如果发现这个 Service 正在运行，AMS 就会决定：“好，把它干掉。”
+- AMS 会通过 Binder 发一个消息回到你的 App 进程的主线程（ActivityThread）。
+- 保姆执行 (App 进程的主线程) ：
+
+- 你的 App 主线程收到了 AMS 的指令：“嘿，把那个 Service 销毁掉。”
+- 主线程通过反射找到那个 Service 实例。
+- 主线程调用该实例的 onDestroy() 方法。
+
+
+start和stop都是异步的操作，只负责把指令发给aws
+
+> 接口和方法
+
+onCreate()、onDestroy()、onBind(Intent intent)（启动式无需实现）
+
+
+onStartCommand(Intent intent, int flags, int startId) 🔥 最核心
+
+- 什么时候调？ 每次外界调用 startService() 时。
+- 干什么？ 在这里解析 Intent 传来的数据，然后 启动后台任务 （比如开个线程去下载）。
+- 返回值 ：决定 Service 被系统意外杀死后是否重启（ START_STICKY 等）。
+
+#### Bound Service(绑定式)
+
+如果说 启动式 Service 是“发短信命令员工干活”，那么 绑定式 Service 就是“直接把员工叫到办公室，面对面指挥”。
+
+Binder 是唯一能从 Service 传递给 Activity 的信物 。
+
+绑定式 Service 的三大特点：
+
+1. 直连 ：Activity 可以直接获取 Service 的实例对象，像调用普通 Java 对象一样调用 Service 里的方法。
+2. 共存亡 ：如果没有任何人绑定这个 Service，它通常会自动销毁（除非它也被 startService 启动过）。
+3. Binder ：连接 Activity 和 Service 的中间人（遥控器）。
+
+
+ > 为什么绑定式需要binder？直接持有service对象然后调用不就完事了吗
+
+ 
+答案其实是： 为了防备“分家” 。
+*Android 的设计初衷：跨进程 (IPC)*
+Binder 的本质是 Android 的 跨进程通信机制 。
+
+Service 的设计初衷，不仅仅是为了让你在同一个 App 内部用的，更是为了让 其他 App 也能用你的 Service。
+比如：
+
+- 支付宝想调用淘宝的 Service 付款。
+- 你的 App 想调用系统的定位 Service。
+在这种情况下，Activity 和 Service 运行在两个完全不同的内存空间里。 你根本不可能“直接持有 Service 对象”，因为那是别人家的对象，你摸不着。
+这时候，必须用 Binder 这个“电话线”来传话。
+
+跨进程使用AIDL 
+AIDL （Android Interface Definition Language） 是 Android 提供的一种跨进程通信机制。
+
+它允许你定义一个接口，然后在不同的进程之间传递这个接口的实例。
+
+这样，你就可以在 Activity 里调用 Service 里的方法，就像调用本地方法一样。
+
+>  bindService(intent, connection, Context.BIND_AUTO_CREATE); 会发生什么？
+
+当你执行这行代码的瞬间：
+
+1. Activity 发出请求 ：
+   
+   - bindService 方法本身会 立即返回 true （表示系统接受了你的请求，正在处理）。
+   - 注意 ：此时 mService 还是 null ！你还不能用 Service。
+2. 系统接单 (AMS) ：
+   
+   - Android 系统检查 Service 是否存在。
+   - 如果不存在 （因为你加了 BIND_AUTO_CREATE ）：
+     - 系统实例化 Service。
+     - 调用 Service 的 onCreate() 。
+   - 如果已存在 ：跳过创建步骤。
+3. Service 响应 ：
+   
+   - 系统调用 Service 的 onBind(Intent intent) 方法。
+   - Service 在这个方法里，把做好的 Binder 对象（那个“把手”）返回给系统。
+4. 回调通知 (关键一步) ：
+   
+   - 系统拿到 Binder 后，会转头回调你在 Activity 里定义的 connection 对象的 onServiceConnected() 方法。
+   - 只有在这个方法执行时 ，你才真正拿到了 Binder ，才能把它转成 Service 实例并开始调用方法。
+#### activity和service的通信
+
+- 启动式 Service ：通过 onStartCommand() 方法传递 Intent 数据给 Service，无直接通信通道，反过来的话也可以通过广播或回调实现。
+- 绑定式 Service ：通过 onBind() 方法返回 Binder 对象，Activity 可以直接调用 Service 里的方法。
+
+
+
+
+
+ 〉用法片段 
+ ```java
+
+@Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            downloadBinder = (MyBoundService.DownloadBinder) service;
+            mBound = true;
+            Toast.makeText(BoundServiceActivity.this, "已连接到 Service", Toast.LENGTH_SHORT).show();
+        }
+
+```
+- 当你调用 bindService(intent, connection, ...) 之后，系统成功把当前 Activity 和目标 Service 建立起连接时，就会自动回调这个方法。
+-在你的 MyBoundService 里， onBind() 返回的是一个 DownloadBinder 对象（ MyBoundService.java:13-24 ），只不过在这里被当成 IBinder 传进来了。
+所以这里把它强制转换回真正的类型：
+“我知道这个 IBinder 实际上就是 MyBoundService.DownloadBinder ”，所以 (MyBoundService.DownloadBinder) service 。
+ 转换完后赋值给成员变量 downloadBinder ，这样这个 Activity 里其他地方就可以用它来调用：
+- downloadBinder.startDownload()
+- downloadBinder.getProgress() 也就是说： 拿到了一个可以直接“遥控”Service 的遥控器对象 。
+
+
+
+#### 前台服务
+
+希望运行的service不会被系统回收，有常驻通知栏提示的 Service，优先级很高
+
+
+Android 8.0（API 26）是分水岭：8.0 前可直接用 startService() + startForeground()；8.0 后必须先用 startForegroundService() 启动，且在 5 秒内调用 startForeground() 显示通知，否则系统会抛出 ForegroundServiceStartNotAllowedException 并终止服务；
+
+
+需要申请权限，这点比较麻烦
+
+```java
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand");
+
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("前台Service示例")
+                .setContentText("正在执行一个长时间任务...")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setOngoing(true)
+                .build();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+        } else {
+            startForeground(1, notification);
+        }
+
+        if (workThread == null || !workThread.isAlive()) {
+            workThread = new Thread(() -> {
+                try {
+                    for (int i = 0; i < 10; i++) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            Log.d(TAG, "Thread interrupted, stop working");
+                            return;
+                        }
+                        Log.d(TAG, "Foreground task running... " + i);
+                        Thread.sleep(1000);
+                    }
+                    Log.d(TAG, "Foreground task finished");
+                    stopSelf();
+                } catch (InterruptedException e) {
+                    Log.d(TAG, "InterruptedException, stop working");
+                }
+            });
+            workThread.start();
+        }
+
+        return START_STICKY;
+    }
+```
+生命周期和普通启动式 Service 一样：
+- onCreate() -> onStartCommand() -> onDestroy()
+
+> 接口和用法
+
+```java
+
+@Override
+public void onCreate() {
+    super.onCreate();
+    Log.d(TAG, "onCreate");
+    createNotificationChannel();
+}
+
+
+ private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "前台Service学习用渠道",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
+    }
+```
+
+- Intent 是“命令 + 参数”，是在 app 内部（或 app 之间）传话用的东西。
+- Notification 是“给用户看的 UI 提示 + 入口”，是系统帮你展示在通知栏上的界面元素。 它们完全是两类东西，只是前台 Service 同时会用到这两样
+
+
+- Activity 启动 Service：
+  ```java
+  Intent intent = new Intent(this, 
+  MyForegroundService.class);
+  ContextCompat.startForegroundService(this, 
+  intent);
+  ```
+- Service 收到：
+  ```java
+  onStartCommand(Intent intent, int flags, int 
+  startId)
+  ```
+这里 Intent 的角色就三个字： “带口信” ：
+
+- 谁（哪个组件）要启动我；
+- 要启动的是哪个 Service；
+- 想让我做什么（可以通过 intent.putExtra(...) 传参数）。
+也就是说： Intent 是在“代码之间”传递命令和数据的，不直接面向用户。
+
+
+
+
+- Activity 侧：
+  
+  - startService(intent)
+  - ContextCompat.startForegroundService(context, intent)
+    - 启动一个（打算变成前台的）Service。
+  - stopService(intent)
+    - 请求停止这个 Service。
+- Service 侧：
+  
+  - onStartCommand(Intent intent, int flags, int startId)
+    - 接收 Activity 通过 Intent 传来的“命令 + 参数”；
+    - 你在这里根据 intent 决定要做什么任务（比如下载哪个文件）。
+关键词：Intent = 调 Service 的“命令参数包”。
+
+#### 子线程 IntentService
+
+service 里的代码默认是运行在主线程的。  （你在里面写的代码，如果不自己 new Thread，那就全部跑在主线程里。）
+普通Service要手动实现关闭的逻辑
+ 
+IntentService = 自带“子线程 + 队列 + 自动停止”的启动式 Service
+
+> 接口和用法
+
+只要实现一个核心方法： onHandleIntent(Intent intent) ，
+
+  - 这个方法在“单独的子线程”里跑
+  - 每来一次 startService(intent)，就会把这个 intent 丢给这里
+
+> 注意点
+
+必须实现构造函数
+
+```java
+public MyIntentService() {
+        super("MyIntentService");
+    }
+```
+
+## Session 11 网络  

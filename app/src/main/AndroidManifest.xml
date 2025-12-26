@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.myapplication">
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -56,6 +61,19 @@
             android:label="Advanced Query Demo"/>
         <activity android:name=".DatabaseTransactionActivity"
             android:label="SQLite Transaction Demo"/>
+        <activity android:name=".ThreadActivity"
+            android:label="Thread &amp; Handler Demo"/>
+        <activity android:name=".ServiceActivity"
+            android:label="Started Service Demo"/>
+        <activity android:name=".BoundServiceActivity"
+            android:label="Bound Service Demo"/>
+        
+        <service android:name=".MyStartedService" />
+        <service android:name=".MyBoundService" />
+        <service
+            android:name=".MyForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
         
         <!-- 注册广播接收者 1 -->
         <receiver android:name=".MyBroadcastReceiver"
