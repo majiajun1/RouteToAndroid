@@ -174,3 +174,22 @@ var hander = object : Handler()
 
 ```
 快速创建一个 “仅用一次” 的类实例，同时重写父类方法，替代 Java 的「匿名内部类」。
+
+> 这是什么写法？ class BackdoorImpl(private val activity: Activity) 
+
+这个写法的核心是 Kotlin 的 “语法糖”——把「构造参数声明」和「类成员变量定义」合并成一行，替代了 Java 中 “先声明成员变量，再在构造函数中赋值” 的冗余写法。
+    
+等价于
+```java
+// Java 写法（冗余，需分两步）
+public class BackdoorImpl {
+    // 第一步：声明私有不可变成员变量
+    private final Activity activity;
+
+    // 第二步：构造函数中赋值
+    public BackdoorImpl(Activity activity) {
+        this.activity = activity;
+    }
+}
+
+```

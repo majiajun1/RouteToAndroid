@@ -1,7 +1,43 @@
 @startuml
 'https://plantuml.com/sequence-diagram
 
-class  MainActivity
+skinparam class {
+  BackgroundColor<<appweb>>   #FFFFFF
+  BorderColor<<appweb>>       #000000
+  FontSize<<appweb>>          14
+
+    BackgroundColor<<appUtils>>   #CCFFCC
+    BorderColor<<appUtils>>       #000000
+    FontSize<<appUtils>>          14
+
+        BackgroundColor<<Object-appUtils>>   #CCFFCC
+        BorderColor<<Object-appUtils>>       #000000
+        FontSize<<Object-appUtils>>          14
+
+        BackgroundColor<<appUI>>   #CCE5FF
+        BorderColor<<appUI>>       #000000
+        FontSize<<appUI>>          14
+
+    BackgroundColor<<objectWeb>>   #FFFFFF
+    BorderColor<<objectWeb>>       #000000
+    FontSize<<objectWeb>>          14
+
+  BackgroundColor<< inner class >> #FFF2CC
+  BorderColor<< inner class >>     #C9A000
+  FontSize<< inner class >>        12
+
+
+
+  BackgroundColor<< anonymous, Handler >> #FFF2CC
+    BorderColor<< anonymous, Handler >>     #C9A000
+    FontSize<< anonymous, Handler >>        12
+
+  BackgroundColor<<android>> #E0E0E0
+  BorderColor<<android>>     #888888
+  FontSize<<android>>        10
+}
+
+class  MainActivity <<appweb>>
 {
             - const TAG : String = "MainActivity2"
             + const ACTION_WALLPAPER_UPDATE : String = "com.cvte.maxhub.uwst.WALLPAPER_UPDATE_ACTION"
@@ -42,11 +78,13 @@ class BoxService << inner class >> {
     + onServiceConnected(name: ComponentName?, service: IBinder?) : void
     + onServiceDisconnected(name: ComponentName?) : void
 }
+class ServiceConnection <<android>>{}
 ServiceConnection <|-- BoxService : 继承
 MainActivity *-- BoxService : 包含
 class WebBroadcast << inner class >> {
     + onReceive(context: Context?, intent: Intent?) : void
 }
+class BroadcastReceiver<<android>>
 BroadcastReceiver <|-- WebBroadcast : 继承
 MainActivity *-- WebBroadcast : 包含
 class WebViewSetting << inner class >> {
@@ -54,30 +92,33 @@ class WebViewSetting << inner class >> {
     + onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) : void
     + onPageFinished(view: WebView?, url: String?) : void
 }
+class WebViewClient<<android>>
 MainActivity *-- WebViewSetting : 包含
 WebViewClient <|-- WebViewSetting : 继承
-
+class AppCompatActivity<<android>>
 AppCompatActivity <|-- MainActivity : 继承
 
-class MainApplication {
+class MainApplication <<appweb>>{
     + handler : Handler
     + lateinit context : Context
 
     + onCreate() : void
     - getProcessName2() : String
 }
+class Application<<android>>
 Application <|-- MainApplication : 继承
 
 
-class CrashHandler
+class CrashHandler <<appweb>>
 {
     - defaultHandler: Thread.UncaughtExceptionHandler? = null
     + uncaughtException(thread: Thread, throwable: Throwable) : void
     + getCrashMsg(throwable: Throwable) : String
 }
-Thread.UncaughtExceptionHandler <|-- CrashHandler
+class Thread.UncaughtExceptionHandler <<android>>
+Thread.UncaughtExceptionHandler   <|-- CrashHandler
 
-class SystemUpdateManager << object >>{
+class SystemUpdateManager <<objectWeb>>{
     - const TAG : String = "SystemUpdateService"
         - const WB03_UPDATE : String = "wb03_update.zip"
         - const WB05_UPDATE : String = "wb05_update.zip"
@@ -119,11 +160,13 @@ class "<< anonymous >> Handler" << anonymous, Handler >> {
 ' 核心：SystemUpdateManager 包含匿名Handler（组合关系*--）
 SystemUpdateManager *-- "<< anonymous >> Handler" : 包含（匿名object）
 ' 匿名Handler继承系统Handler（泛化关系--|>）
+class Handler <<android>>
+class Message <<android>>
 "<< anonymous >> Handler" --|> Handler : 继承
 ' 匿名Handler依赖Message（处理消息需要Message）
 "<< anonymous >> Handler" --> Message : 依赖
 
-class WindowService
+class WindowService <<appweb>>
 {
 - {static} TAG : String = "WindowService "
     - {static} PERSIST_KEEP_CODE_SHOW : String = "persist.code.keep.showing"
@@ -145,12 +188,12 @@ class WindowService
     - onReceiveKeepCodeShowEvent(Intent intent) : void
     - onReceiveShareEndEnvent
 }
-
+class Service <<android>>
 Service <|-- WindowService : 继承
 
 
 
-class Constants << object >> {
+class Constants <<objectWeb>> {
     ' 普通成员变量
     + context : Context = MainApplication.context
 
@@ -175,10 +218,117 @@ class Constants << object >> {
     + getApIp() : String
 }
 
-class BootBroadcast {
+class BootBroadcast <<appweb>> {
   - TAG : String = "BootBroadcast"
   + onReceive(context: Context, intent: Intent?)
 }
 BroadcastReceiver <|-- BootBroadcast : 继承
+
+
+class BackdoorImpl <<appweb>>
+{
+  - fianl activity :  Activity
+  + BackdoorImpl(activity: Activity)
+  - adbCount : Int = 0
+  - settingCount : Int = 0
+  - webSettingCount : Int = 0
+  - launcherCount : Int = 0
+  - ACTION_ZIP_LOG : String = "action.start.zip.log"
+  - XBUG_SDCARD : String = "/sdcard/Logs/xbug.zip"
+  - job : Job
+  - scope : CoroutineScope
+
+  - initLeftBottomSetting() : void
+  - initLeftTopWebSetting() : void
+  - isCanLog : Boolean = true
+  - initRightTopInfo() : void
+  - xbug() : MutableList<File>
+  - dialog : CusDialog? = null
+  - showDialog(msg: String,delay : Long = 0) : void
+  - dismiss : void
+  - hasXbug : Boolean
+  + openAdb : void
+  + isAdbEnable : Boolean = false
+  - initRightBottomADB() : void
+}
+
+class ActivityUtil <<appUtils>>
+{
+    + {static} ACTIVITY_NAME_SCREEN_SHARE : String = "om.maxhub.screenshare.server.ui.display.DisplayActivity"
+    + {static} ACTIVITY_NAME_LAUNCHER:String = "com.exceedshare.boxlauncher.MainActivity"
+    + {static} getTopActivity(Context context) : String
+}
+
+class AppInfoUtil <<appUtils>>
+{
+    + {static} final getCommitId(context: Context) : String
+    + {static} final getBranchName(context: Context) : String
+    - {static} final getMetaDataFromApplication(context: Context,key : String) : String
+    + {static} checkAppInstalled(context:Context,pkgName:String) : Boolean
+    + {static} getMetaDataValue(context: Context, metaDataName: String) : String
+    + {static} getDeviceSN():String
+
+}
+
+class FastBlur <<appUtils>>
+{
+  + {static} doBlur(Bitmap sentBitmap, int radius, boolean canReuseInBitmap) : Bitmap
+ }
+
+class IpHelepr <<Object-appUtils>> {
+    - const IPADDRESS_PATTERN : String = "(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+    + findIpAddr(ipString : String?) : String?
+    + getIpAddressString() : String
+
+}
+
+class JsonUtils <<appUtils>>
+{
+    + beanToJson(obj:Any) : String
+    + jsonToBean<T>(jsonStr: String, clazz: Class<T>) : T
+    ' 2. 内联具体化泛型函数：标注<<inline reified>>体现特性
+    + jsonToBean<T>(jsonStr: String) : T <<inline reified>>
+}
+
+class PropertyHelper <<appUtils>>
+{
+    + PropertyHelper():void
+    + {static} set(key: String, value: String) : void
+    + {static} get(key: String,defaultValue : String) : String
+}
+
+class Rlog <<appUtils>> {
+    ' 初始化方法：static + 完整参数 + 逻辑说明
+    - {static} init(context: Context, path: String) : void
+
+    ' 重载的日志方法：按级别分组，保留所有参数变体
+    - {static} v(tag: String, message: String) : void
+    - {static} v(message: String) : void
+
+    - {static} i(message: String) : void
+    - {static} i(tag: String, message: String) : void
+
+    - {static} d(message: String) : void
+    - {static} d(tag: String, message: String) : void
+    - {static} d(tag: String, message: String, tr: Throwable) : void
+
+    - {static} w(message: String) : void
+    - {static} w(tag: String, message: String) : void
+    - {static} w(tag: String, message: String, tr: Throwable) : void
+
+    - {static} e(tx: Throwable) : void
+    - {static} e(tag: String, message: String) : void
+    - {static} e(message: String) : void
+    - {static} e(tag: String, message: String, tr: Throwable) : void
+
+    - {static} r(tag: String, message: String) : void
+}
+
+class ShellCommandUtils <<appUtils>>
+{
+
+
+}
+
 
 @enduml
