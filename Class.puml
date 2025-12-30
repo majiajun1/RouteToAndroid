@@ -3,8 +3,150 @@
 
 class  MainActivity
 {
+            - const TAG : String = "MainActivity2"
+            + const ACTION_WALLPAPER_UPDATE : String = "com.cvte.maxhub.uwst.WALLPAPER_UPDATE_ACTION"
+            + const ACTION_TEMPLATE_CHANGED : String = "com.cvte.maxhub.uwst.TEMPLATE_CHANGED_ACTION"
+            + const ACTION_HDMI_CHANGE : String = "hdmi_output_change_notify"
+            - const ACTION_AP_CHANGE : String = "action.ap.change"
+            - const SCREEN_SHARE_COUNT : Strig = "content_count"
+
+            - webBroadcast : WebBroadcast? = null
+            + glideFactory : DrawableCrossFadeFactory
+
+            - webView: WebView? = null
+            - lateinit bgImageview: ImageView
+
+            - isRefresh : Boolean = false
+            - isLocaleChange : Boolean = false
+            - boxService: BoxService? = null
+
+            - KEY_REBOOT : String = "KEY_REBOOT"
+            - var rebootCount : Int = 0
+
+           + onCreate(savedInstanceState: Bundle?) : void
+           + onSaveInstanceState(outState: Bundle) : void
+           + registerBoxService() : void
+           + unRegisterService() : void
+           - initWebView() : void
+           - registerBroadcast() : void
+           - refreshWebView() : void
+           - showBackground() : void
+           + onResume() : void
+           + onPause() : void
+           + onDestroy() : void
+           + onKeyDown(keyCode: Int, event: KeyEvent?) : Boolean
+           - initCrashReport() : void
 
 }
+class BoxService << inner class >> {
+    + onServiceConnected(name: ComponentName?, service: IBinder?) : void
+    + onServiceDisconnected(name: ComponentName?) : void
+}
+ServiceConnection <|-- BoxService : 继承
+MainActivity *-- BoxService : 包含
+class WebBroadcast << inner class >> {
+    + onReceive(context: Context?, intent: Intent?) : void
+}
+BroadcastReceiver <|-- WebBroadcast : 继承
+MainActivity *-- WebBroadcast : 包含
+class WebViewSetting << inner class >> {
+    + onReceiveError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) : void
+    + onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) : void
+    + onPageFinished(view: WebView?, url: String?) : void
+}
+MainActivity *-- WebViewSetting : 包含
+WebViewClient <|-- WebViewSetting : 继承
+
+AppCompatActivity <|-- MainActivity : 继承
+
+class MainApplication {
+    + handler : Handler
+    + lateinit context : Context
+
+    + onCreate() : void
+    - getProcessName2() : String
+}
+Application <|-- MainApplication : 继承
+
+
+class CrashHandler
+{
+    - defaultHandler: Thread.UncaughtExceptionHandler? = null
+    + uncaughtException(thread: Thread, throwable: Throwable) : void
+    + getCrashMsg(throwable: Throwable) : String
+}
+Thread.UncaughtExceptionHandler <|-- CrashHandler
+
+class SystemUpdateManager << object >>{
+    - const TAG : String = "SystemUpdateService"
+        - const WB03_UPDATE : String = "wb03_update.zip"
+        - const WB05_UPDATE : String = "wb05_update.zip"
+        - MSG_WAIT_UPDATE : Int = 0X02
+        - MSG_QUERY_CHECK_USB : Int = 0X03
+        - KEY_MD5 : String = "FILE_MD5"
+        - TRY_AGAIN_COUNT : Int = 1
+
+        ' 成员变量
+        - context : Context = MainApplication.context
+        - dialog : CusDialog?
+        - waitCount : Int = 15
+        - job : Job
+        - scope : CoroutineScope
+        - updateMd5 : String = ""
+        - usbFile : File?
+        - isCanUpdate : AtomicBoolean = AtomicBoolean(true)
+        - usbCount : Int = 0
+        - handler : Handler
+
+        ' 公开方法
+        + checkUpdateFle() : void
+        + dismiss() : void
+
+        ' 私有方法
+        - deleteCache() : void
+        - checkIfNeedUpdate(updateFile: File) : void
+        - showDialog(file: File) : void
+        - checkInstall() : void
+        - startInstall(updateFile: File) : Boolean
+        - getLocalUpdatePath() : String
+        - showLoading() : void
+}
+class "<< anonymous >> Handler" << anonymous, Handler >> {
+    ' 标注注解：用note关联
+    + handleMessage(msg: Message) : void
+}
+' 关系连线
+' 核心：SystemUpdateManager 包含匿名Handler（组合关系*--）
+SystemUpdateManager *-- "<< anonymous >> Handler" : 包含（匿名object）
+' 匿名Handler继承系统Handler（泛化关系--|>）
+"<< anonymous >> Handler" --|> Handler : 继承
+' 匿名Handler依赖Message（处理消息需要Message）
+"<< anonymous >> Handler" --> Message : 依赖
+
+class WindowService
+{
+- {static} TAG : String = "WindowService "
+    - {static} PERSIST_KEEP_CODE_SHOW : String = "persist.code.keep.showing"
+    - {static} SCREENSHARE_COUNT : String = "content_count"
+    - {static} SCREEN_START : String = "com.maxhub.screenshare.server.SCREEN_SHARE_START"
+    - {static} SCREEN_EXIT : String = "com.maxhub.screenshare.server.SCREEN_SHARE_EXIT"
+    - {static} PERSIST_KEEP_SHOW_CODE : String = "persist.code.keep.showing"
+    - {static} ACTION_CODE_KEEP_SHOW : String = "action.code.keep.show"
+
+    ' 普通成员变量（private）
+    - mFlatCodeView : FlatCodeView
+    - mCurrentShareCount : int
+
+    + WindowService() : void
+    + onBind(intent: Intent) : IBinder
+    + onCreate() : void
+    + onStartCommand(intent: Intent?, flags: Int, startId: Int) : Int
+    - showPinCode(boolean show) : void
+    - onReceiveKeepCodeShowEvent(Intent intent) : void
+    - onReceiveShareEndEnvent(Intent intent) : void
+}
+
+Service <|-- WindowService : 继承
 
 
 @enduml
