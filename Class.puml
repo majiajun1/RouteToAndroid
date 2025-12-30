@@ -143,10 +143,42 @@ class WindowService
     + onStartCommand(intent: Intent?, flags: Int, startId: Int) : Int
     - showPinCode(boolean show) : void
     - onReceiveKeepCodeShowEvent(Intent intent) : void
-    - onReceiveShareEndEnvent(Intent intent) : void
+    - onReceiveShareEndEnvent
 }
 
 Service <|-- WindowService : 继承
 
+
+
+class Constants << object >> {
+    ' 普通成员变量
+    + context : Context = MainApplication.context
+
+    ' const直接前置（和Kotlin源码一致：const val XXX）
+    + const PORT : String = "8090"
+    + const PROPERTY_WALLPAPER : String = "persist.use.custom.paper"
+    + const STRING_TRUE : String = "true"
+    + const STRING_FALSE : String = "false"
+    + const PROPERTY_DESKTOP_URL : String = "persist.desktop.url"
+
+    ' 普通val常量（无const标注）
+    + IP : String = "0.0.0.0"
+    + PATH_WALLPAPER : String = "/sdcard/wallpaper"
+    + URL_DEFAULT_TEMPLATE : String = "http://0.0.0.0:8090/template/..."
+    + PATH_WEB_PAPER : String = "/sdcard/.web_resource/..."
+    + PIN_CODE_URL : String = "http://0.0.0.0:7434/api/query"
+    + PERSIST_WB05_OTA_UPDATE : String = "persist.wb05.isotaUpdate"
+    + OTA_INSTALL_PATH : String = "/cache/recovery/update.zip"
+    + OTA_WB05_INSTALL_PATH : String = "/data/media/0/update.zip"
+
+    ' 单例类方法
+    + getApIp() : String
+}
+
+class BootBroadcast {
+  - TAG : String = "BootBroadcast"
+  + onReceive(context: Context, intent: Intent?)
+}
+BroadcastReceiver <|-- BootBroadcast : 继承
 
 @enduml
