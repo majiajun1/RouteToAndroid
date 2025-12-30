@@ -108,6 +108,13 @@
             android:text="Bound Service Demo"
             android:backgroundTint="#8BC34A"/>
 
+        <Button
+            android:id="@+id/btn_call_phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Call 10086 (Runtime Permission)"
+            android:backgroundTint="#607D8B"/>
+
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

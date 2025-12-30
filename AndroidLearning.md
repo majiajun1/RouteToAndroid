@@ -1110,10 +1110,61 @@ try {
 
 ## Session 8  Contenct Provider
 
-先学service
+ContentProvider 是 Android 提供的“跨应用数据接口层”， 用来把你 app 里的数据封装成一个统一的“数据库服务”，给自己用，也给别的 app 用。
+
+你可以把它想象成：
+
+- 你 app 里有一套数据（比如 SQLite、文件、内存）
+- ContentProvider = 给这套数据加了一层“门面 + 门卫”：
+  - 门面：统一的访问地址（URI）
+  - 门卫：统一的增删改查接口（query/insert/update/delete）
+  
+
+### 运行时权限
+运行时权限 = 那些光写在 Manifest 里还不够，还必须在程序运行时弹框问用户“同不同意”，用户点了“允许”之后才能真正用的权限。
+
+也就是：
+
+- 以前（Android 6.0 之前）：你在 AndroidManifest.xml 里写权限 → 安装时一次性全给你。
+
+- 现在（Android 6.0 之后）：对于敏感权限， 用户必须在“使用到的时候”自己点同意 ，系统才算授权，这类就叫“运行时权限”。
+
+![png](/PngForMarkdown/img_1.png)
+![png](/PngForMarkdown/img_2.png)
 
 
+- 第一步就是要先判断用户是不是已经给过我们授权了，借助的是
+ContextCompat.checkSelfPermission()方法。checkSelfPermission()方法接收两
+个参数：第一个参数是Context，这个没什么好说的；第二个参数是具体的权限名，比如打电
+话的权限名就是Manifest.permission.CALL_PHONE。然后我们使用方法的返回值和
+PackageManager.PERMISSION_GRANTED做比较，相等就说明用户已经授权
 
+<br>
+
+- 如果没有授权的话，则需要调用
+ActivityCompat.requestPermissions()方法向用户申请授权。
+requestPermissions()方法接收3个参数：第一个参数要求是Activity 的实例；第二个参数
+是一个String数组，我们把要申请的权限名放在数组中即可；第三个参数是请求码，只要是唯
+一值就可以了，这里传入了1。
+
+
+最终会落到
+```java
+以打电话为例
+@Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                call();
+            } else {
+                Toast.makeText(this, "You denied the permission", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+```
 
 ## Session 9  多媒体
 
